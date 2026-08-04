@@ -38,7 +38,14 @@ const movies = [
   { id: 37, phase: 6, imdb: "7.4", themeColor: "#0ea5e9", glowColor: "rgba(14, 165, 233, 0.5)", title: "The Fantastic Four: First Steps", year: "2025", duration: "TBD", trailerUrl: "https://www.youtube.com/results?search_query=The+Fantastic+Four+First+Steps+trailer", poster: "./The%20Fantastic%20Four%20First%20Steps.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/drive/ahidhwd1lyadrwk" } ] },
 ];
 
+const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
+const mobileIntroVideo = './starting_video_for_mobile_web.mp4';
+
 document.addEventListener('DOMContentLoaded', () => {
+  const introOverlay = document.getElementById('intro-overlay');
+  const skipBtn = document.getElementById('skip-intro');
+  const introVideo = document.getElementById('intro-video');
+  const heroVideo = document.getElementById('hero-video');
   const moviesGrid = document.getElementById('movies-grid');
   const searchInput = document.getElementById('movie-search');
   const clearSearchBtn = document.getElementById('clear-search');
@@ -48,11 +55,109 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollTopBtn = document.getElementById('scroll-top-btn');
   const header = document.querySelector('.header');
 
+  let appShown = false;
   let currentSearch = '';
 
-  // Initialize interactive cosmic canvas and movies grid immediately
-  initCosmicBackground();
+  // Render movies immediately in background
   renderMovies();
+
+  // Function to detect whether user is on mobile or laptop
+  const getIsMobile = () => {
+    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Transition to main app
+  const showApp = () => {
+    if (appShown) return;
+    appShown = true;
+
+    // Release intro video memory and stop playback
+    if (introVideo) {
+      try {
+        introVideo.pause();
+        introVideo.removeAttribute('src');
+        introVideo.load();
+      } catch (e) {}
+    }
+
+    // Start background canvas and play header hero video
+    initCosmicBackground();
+    if (heroVideo) {
+      heroVideo.play().catch(() => {});
+    }
+
+    if (introOverlay) {
+      introOverlay.style.opacity = '0';
+      introOverlay.style.pointerEvents = 'none';
+      setTimeout(() => {
+        introOverlay.classList.add('hidden');
+      }, 600);
+    }
+  };
+
+  // Setup device-tailored intro video (Laptop vs Mobile)
+  if (introVideo && introOverlay) {
+    const isMobile = getIsMobile();
+    const selectedSrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
+    const deviceLabel = isMobile ? '📱 MOBILE' : '💻 LAPTOP / DESKTOP';
+    const videoFile = isMobile ? 'starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
+
+    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'laptop');
+    introVideo.setAttribute('data-src-file', videoFile);
+
+    console.log(
+      `%c🎬 MCU STARTING VIDEO %c ${deviceLabel} %c File: ${videoFile} (Width: ${window.innerWidth}px)`,
+      'background: #e62429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'background: #00d26a; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'color: #fff; font-weight: bold;'
+    );
+
+    introVideo.muted = true;
+    introVideo.setAttribute('muted', '');
+    introVideo.setAttribute('playsinline', '');
+    introVideo.setAttribute('webkit-playsinline', '');
+    introVideo.src = selectedSrc;
+    introVideo.load();
+
+    const attemptPlay = () => {
+      const p = introVideo.play();
+      if (p !== undefined) {
+        p.catch(() => {});
+      }
+    };
+
+    attemptPlay();
+    introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
+    introVideo.addEventListener('canplay', attemptPlay, { once: true });
+    introVideo.addEventListener('ended', showApp);
+    introVideo.addEventListener('error', showApp);
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showApp();
+      });
+    }
+
+    // Unmute or dismiss on interaction
+    introOverlay.addEventListener('click', () => {
+      if (introVideo) introVideo.muted = false;
+    });
+
+    // Fallback if video is blocked
+    setTimeout(() => {
+      if (!appShown && introVideo && (introVideo.paused || introVideo.currentTime === 0)) {
+        showApp();
+      }
+    }, 4500);
+
+    // Absolute timeout
+    setTimeout(() => {
+      if (!appShown) showApp();
+    }, 8000);
+  } else {
+    initCosmicBackground();
+  }
 
   // 2. Interactive Cosmic Canvas Background (Adaptive for Mobile / Tablet / Desktop)
   function initCosmicBackground() {
