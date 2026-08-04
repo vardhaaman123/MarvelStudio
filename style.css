@@ -456,47 +456,6 @@ button, a, input {
   letter-spacing: 0.5px;
 }
 
-/* Phase Filter Chips (Scrollable Bar for Mobile & Tablet) */
-.phase-filters {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-  max-width: 100%;
-}
-
-.filter-chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border);
-  color: var(--text-secondary);
-  padding: 7px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: var(--transition-bounce);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  white-space: nowrap;
-  user-select: none;
-}
-
-.filter-chip:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.filter-chip.active {
-  background: linear-gradient(135deg, #ed1d24 0%, #c41218 100%);
-  color: #fff;
-  border-color: var(--primary-color);
-  box-shadow: 0 4px 16px var(--primary-glow);
-  transform: translateY(-2px);
-}
-
 /* Movies Grid Layout */
 .movies-grid {
   display: grid;
@@ -602,23 +561,50 @@ button, a, input {
   filter: brightness(1.04) contrast(1.02);
 }
 
-/* Phase Badge on Card */
-.card-phase-badge {
+/* IMDb Rating Badge on Card */
+.card-imdb-badge {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgba(10, 10, 14, 0.75);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(10, 10, 14, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
+  border: 1px solid rgba(245, 197, 24, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(245, 197, 24, 0.12);
   padding: 3px 8px;
   border-radius: 8px;
-  letter-spacing: 0.5px;
   z-index: 3;
   pointer-events: none;
+}
+
+.imdb-tag {
+  background: #f5c518;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.imdb-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #f5c518;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+.imdb-score svg {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
 }
 
 /* Card Content Area */
@@ -911,17 +897,6 @@ button, a, input {
   .movies-section {
     padding-top: 24px;
   }
-  .phase-filters {
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding: 4px 2px 8px;
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Hide scrollbar for clean horizontal chip swiping */
-  }
-  .phase-filters::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 /* Mobile Phones (Portrait & Small Screens: <= 600px) */
@@ -970,37 +945,23 @@ button, a, input {
     gap: 12px;
   }
 
-  .movies-section h2 {
-    font-size: 1.25rem;
-    letter-spacing: 1px;
-  }
-
-  .filter-chip {
-    padding: 6px 13px;
-    font-size: 0.78rem;
-  }
-
-  /* Stunning 2-Column Mobile Movie Cards Layout */
-  .movies-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .movie-card {
-    border-radius: 14px;
-  }
-
-  .card-image-wrap {
-    border-top-left-radius: 14px;
-    border-top-right-radius: 14px;
-  }
-
-  .card-phase-badge {
+  .card-imdb-badge {
     top: 6px;
     left: 6px;
     font-size: 0.65rem;
     padding: 2px 6px;
     border-radius: 6px;
+    gap: 3px;
+  }
+
+  .imdb-tag {
+    font-size: 0.58rem;
+    padding: 1px 3px;
+  }
+
+  .imdb-score {
+    font-size: 0.7rem;
+    gap: 2px;
   }
 
   .card-content {
