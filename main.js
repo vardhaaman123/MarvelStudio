@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Transition to main app
-  // Transition to main app
   const showApp = () => {
     if (appShown) return;
     appShown = true;
@@ -90,19 +89,24 @@ document.addEventListener('DOMContentLoaded', () => {
       heroVideo.play().catch(() => {});
     }
 
-    if (introOverlay) {
-      introOverlay.style.opacity = '0';
-      introOverlay.style.pointerEvents = 'none';
-      introOverlay.classList.add('hidden');
+    const overlay = document.getElementById('intro-overlay') || introOverlay;
+    if (overlay) {
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+      overlay.classList.add('hidden');
       setTimeout(() => {
         try {
-          introOverlay.remove();
+          overlay.remove();
         } catch (e) {
-          introOverlay.style.display = 'none';
+          overlay.style.display = 'none';
         }
-      }, 300);
+      }, 200);
     }
   };
+
+  // Expose to window for immediate global inline execution
+  window.skipIntroVideo = showApp;
+  window.__onIntroSkipped = showApp;
 
   // Setup device-tailored intro video (Laptop vs Mobile)
   if (introVideo && introOverlay) {

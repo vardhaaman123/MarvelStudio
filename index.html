@@ -13,10 +13,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css" />
+    <script>
+      window.skipIntroVideo = function() {
+        var overlay = document.getElementById('intro-overlay');
+        if (overlay) {
+          overlay.style.opacity = '0';
+          overlay.style.pointerEvents = 'none';
+          overlay.classList.add('hidden');
+          setTimeout(function() {
+            try { overlay.remove(); } catch(e) { overlay.style.display = 'none'; }
+          }, 300);
+        }
+        var video = document.getElementById('intro-video');
+        if (video) {
+          try { video.pause(); video.removeAttribute('src'); video.load(); } catch(e) {}
+        }
+        var hero = document.getElementById('hero-video');
+        if (hero) {
+          try { hero.play().catch(function(){}); } catch(e) {}
+        }
+        if (typeof window.__onIntroSkipped === 'function') {
+          window.__onIntroSkipped();
+        }
+      };
+    </script>
   </head>
   <body>
     <!-- Fullscreen Starting Intro Video Overlay (Different for Laptop vs Mobile) -->
-    <div id="intro-overlay" class="intro-overlay" aria-label="Starting Video Intro">
+    <div id="intro-overlay" class="intro-overlay" onclick="window.skipIntroVideo()" ontouchstart="window.skipIntroVideo()" aria-label="Starting Video Intro">
       <div class="intro-backdrop">
         <div class="intro-logo-pulse">
           <span class="marvel-box">MARVEL</span>
@@ -25,11 +49,11 @@
       </div>
       <div class="video-container">
         <video id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
-        <button id="skip-intro" class="skip-btn" aria-label="Skip Intro">
-          <span>Skip</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-        </button>
       </div>
+      <button id="skip-intro" class="skip-btn" type="button" aria-label="Skip Intro" onclick="event.stopPropagation(); window.skipIntroVideo();" ontouchstart="event.stopPropagation(); window.skipIntroVideo();">
+        <span>Skip</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+      </button>
     </div>
 
     <!-- Main Application -->
