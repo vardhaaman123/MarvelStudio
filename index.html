@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marvel Cinematic Universe | Watch & Download</title>
+    <meta name="description" content="Watch and download your favorite Marvel movies in stunning high quality." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <!-- Intro Loading Video -->
+    <div id="intro-overlay" class="intro-overlay">
+      <div class="video-container">
+        <!-- Using a generic placeholder Marvel intro from YouTube iframe or an HTML5 video.
+             Since YouTube iframe cannot autoplay with sound easily without user interaction and might have ads,
+             we'll use a clean placeholder video. A direct MP4 is best. -->
+        <video id="intro-video" autoplay muted playsinline>
+          <source src="./new_opening_marvel_video_web.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <button id="skip-intro" class="skip-btn">Skip Intro</button>
+      </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="hidden">
+      <!-- Background Ambient Glow & Cosmic Canvas -->
+      <canvas id="cosmic-canvas"></canvas>
+      <div class="ambient-glow orb-1"></div>
+      <div class="ambient-glow orb-2"></div>
+      <div class="ambient-glow orb-3"></div>
+
+      <header class="header">
+        <div class="logo">
+          <span class="marvel-box">MARVEL</span>
+          <span class="studios-text">MOVIES</span>
+        </div>
+        <div class="header-search">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="movie-search" placeholder="Search Marvel movies..." autocomplete="off" />
+        </div>
+        <nav class="nav">
+          <a href="#featured" class="active">All Movies</a>
+        </nav>
+      </header>
+      
+      <main class="main-content">
+        <section class="hero">
+          <video autoplay loop muted playsinline class="hero-video">
+            <source src="./new_one_header_video_web.mp4" type="video/mp4">
+          </video>
+          <div class="hero-overlay"></div>
+        </section>
+
+        <section class="movies-section" id="featured">
+          <div class="section-header">
+            <h2>MARVEL CINEMATIC UNIVERSE</h2>
+          </div>
+          
+          <div id="movies-grid" class="movies-grid">
+            <!-- Movies dynamically injected here -->
+          </div>
+          <div id="no-results" class="no-results hidden">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+            <p>No Marvel movies found matching your search.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <div class="footer-logo">
+          <span class="marvel-box">MARVEL</span>
+          <span class="studios-text">MOVIES</span>
+        </div>
+        <p>&copy; 2026 MCU Fan Hub. High quality streaming & downloads archive.</p>
+      </footer>
+
+      <!-- Scroll to Top Button -->
+      <button id="scroll-top-btn" class="scroll-top-btn" aria-label="Scroll to top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+      </button>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
