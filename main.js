@@ -93,10 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (introOverlay) {
       introOverlay.style.opacity = '0';
       introOverlay.style.pointerEvents = 'none';
+      introOverlay.classList.add('hidden');
       setTimeout(() => {
-        introOverlay.style.display = 'none';
-        introOverlay.classList.add('hidden');
-      }, 500);
+        try {
+          introOverlay.remove();
+        } catch (e) {
+          introOverlay.style.display = 'none';
+        }
+      }, 300);
     }
   };
 
@@ -161,17 +165,28 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('ended', showApp);
     introVideo.addEventListener('error', handleError);
 
-    if (skipBtn) {
-      skipBtn.addEventListener('click', (e) => {
+    const triggerSkip = (e) => {
+      if (e) {
+        e.preventDefault();
         e.stopPropagation();
-        showApp();
-      });
+      }
+      showApp();
+    };
+
+    if (skipBtn) {
+      skipBtn.addEventListener('click', triggerSkip);
+      skipBtn.addEventListener('pointerdown', triggerSkip);
+      skipBtn.addEventListener('touchstart', triggerSkip, { passive: false });
     }
 
-    // Click anywhere on overlay to instantly enter
-    introOverlay.addEventListener('click', () => {
-      showApp();
-    });
+    // Click/touch anywhere on overlay or press key to skip
+    introOverlay.addEventListener('click', triggerSkip);
+    introOverlay.addEventListener('touchstart', triggerSkip, { passive: true });
+    window.addEventListener('keydown', (e) => {
+      if (!appShown && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) {
+        showApp();
+      }
+    }, { once: true });
 
     // Fast fallback: if video is paused/stuck and hasn't started playing within 2.2 seconds, open the site
     setTimeout(() => {
