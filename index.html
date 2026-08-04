@@ -15,18 +15,6 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <!-- Intro Loading Video -->
-    <div id="intro-overlay" class="intro-overlay">
-      <div class="video-container">
-        <video id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture>
-          <source src="./starting_video_for_mobile_web.mp4" type="video/mp4" media="(max-width: 768px)">
-          <source src="./new_opening_marvel_video_web.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-        <button id="skip-intro" class="skip-btn" aria-label="Skip Intro">Skip Intro ➔</button>
-      </div>
-    </div>
-
     <!-- Main Application -->
     <div id="app">
       <!-- Background Ambient Glow & Cosmic Canvas -->
@@ -43,7 +31,13 @@
           </a>
           <div class="header-search">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="movie-search" placeholder="Search Marvel movies..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+            <input 
+              type="text" 
+              id="movie-search" 
+              placeholder="Search by movie title, year..." 
+              autocomplete="off"
+              spellcheck="false"
+            />
             <button id="clear-search" class="clear-search-btn hidden" aria-label="Clear search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
@@ -51,11 +45,12 @@
           <nav class="nav">
             <a href="#featured" class="active">All Movies</a>
           </nav>
+        </div>
       </header>
       
       <main class="main-content">
         <section class="hero">
-          <video id="hero-video" loop muted playsinline webkit-playsinline preload="none" disablePictureInPicture class="hero-video">
+          <video id="hero-video" autoplay loop muted playsinline webkit-playsinline preload="auto" disablePictureInPicture class="hero-video">
             <source src="./new_one_header_video_web.mp4" type="video/mp4">
           </video>
           <div class="hero-overlay"></div>

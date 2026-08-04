@@ -1,6 +1,3 @@
-const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './starting_video_for_mobile_web.mp4';
-
 const movies = [
   { id: 1, phase: 1, title: "Iron Man", year: "2008", duration: "2h 6m", trailerUrl: "https://www.youtube.com/results?search_query=Iron+Man+trailer", poster: "./ironman-poster.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/drive/wbqtrrkvjrfgxsd" }, { resolution: "2K", url: "https://hubcloud.cx/drive/bq662xhgouqhtc7" } ] },
   { id: 2, phase: 1, title: "The Incredible Hulk", year: "2008", duration: "1h 52m", trailerUrl: "https://www.youtube.com/results?search_query=The+Incredible+Hulk+trailer", poster: "./new%20The%20Incredible%20Hulk.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/video/epp1j1t1pj5ny47" }, { resolution: "2K", url: "https://vcloud.zip/d600hupzuqo0kgy" } ] },
@@ -42,10 +39,6 @@ const movies = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-  const introOverlay = document.getElementById('intro-overlay');
-  const appContent = document.getElementById('app');
-  const skipBtn = document.getElementById('skip-intro');
-  const introVideo = document.getElementById('intro-video');
   const moviesGrid = document.getElementById('movies-grid');
   const searchInput = document.getElementById('movie-search');
   const clearSearchBtn = document.getElementById('clear-search');
@@ -56,116 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollTopBtn = document.getElementById('scroll-top-btn');
   const header = document.querySelector('.header');
 
-  let appShown = false;
   let currentSearch = '';
   let currentPhase = 'all';
 
-  // Render movie grid structure immediately
+  // Initialize interactive cosmic canvas and movies grid immediately
+  initCosmicBackground();
   renderMovies();
-
-  // 1. Transition to App
-  const showApp = () => {
-    if (appShown) return;
-    appShown = true;
-
-    // Release intro video resources
-    if (introVideo) {
-      try {
-        introVideo.pause();
-        introVideo.removeAttribute('src');
-        introVideo.load();
-      } catch (e) {}
-    }
-
-    // Start background canvas and hero video only after intro finishes
-    initCosmicBackground();
-    const heroVideo = document.getElementById('hero-video');
-    if (heroVideo) {
-      heroVideo.play().catch(e => console.log('Hero play deferred:', e));
-    }
-
-    if (introOverlay) {
-      introOverlay.style.opacity = '0';
-      introOverlay.style.pointerEvents = 'none';
-      setTimeout(() => {
-        introOverlay.classList.add('hidden');
-      }, 500);
-    }
-  };
-
-  // Skip & Click listeners
-  if (skipBtn) {
-    skipBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showApp();
-    });
-  }
-
-  if (introOverlay) {
-    introOverlay.addEventListener('click', showApp);
-    introOverlay.addEventListener('touchstart', showApp, { passive: true });
-  }
-
-  // 2. Select and play device-tailored video
-  if (introVideo) {
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const selectedSrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
-    const deviceType = isMobile ? 'MOBILE (iPhone/Android)' : 'LAPTOP / DESKTOP';
-    const videoFileName = isMobile ? 'starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
-
-    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'laptop');
-    introVideo.setAttribute('data-video-file', videoFileName);
-
-    console.log(
-      `%c🎬 MCU INTRO LOADED %c ${deviceType} %c Video: ${videoFileName} (Viewport: ${window.innerWidth}px)`,
-      'background: #e62429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
-      'background: #1e1e24; color: #00d26a; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
-      'color: #f1f1f1; font-weight: normal;'
-    );
-
-    introVideo.muted = true;
-    introVideo.setAttribute('muted', '');
-    introVideo.setAttribute('playsinline', '');
-    introVideo.setAttribute('webkit-playsinline', '');
-    introVideo.src = selectedSrc;
-    introVideo.load();
-
-    const attemptPlay = () => {
-      const p = introVideo.play();
-      if (p !== undefined) {
-        p.catch(err => {
-          console.warn("Autoplay blocked/waiting:", err);
-        });
-      }
-    };
-
-    attemptPlay();
-    introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
-    introVideo.addEventListener('canplay', attemptPlay, { once: true });
-    introVideo.addEventListener('ended', showApp);
-    introVideo.addEventListener('error', showApp);
-
-    // Audio unmute on first interaction
-    const unmute = () => {
-      introVideo.muted = false;
-    };
-    document.addEventListener('click', unmute, { once: true });
-    document.addEventListener('touchstart', unmute, { once: true, passive: true });
-  }
-
-  // Fallback timer: if video fails to play within 4.5 seconds or stays black, smoothly dismiss overlay
-  setTimeout(() => {
-    if (!appShown && introVideo && (introVideo.paused || introVideo.currentTime === 0)) {
-      showApp();
-    }
-  }, 4500);
-
-  // Safety absolute timeout
-  setTimeout(() => {
-    if (!appShown) {
-      showApp();
-    }
-  }, 7500);
 
   // 2. Interactive Cosmic Canvas Background (Adaptive for Mobile / Tablet / Desktop)
   function initCosmicBackground() {
