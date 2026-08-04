@@ -1,3 +1,6 @@
+const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
+const mobileIntroVideo = './starting_video_for_mobile_web.mp4';
+
 const movies = [
   { id: 1, phase: 1, title: "Iron Man", year: "2008", duration: "2h 6m", trailerUrl: "https://www.youtube.com/results?search_query=Iron+Man+trailer", poster: "./ironman-poster.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/drive/wbqtrrkvjrfgxsd" }, { resolution: "2K", url: "https://hubcloud.cx/drive/bq662xhgouqhtc7" } ] },
   { id: 2, phase: 1, title: "The Incredible Hulk", year: "2008", duration: "1h 52m", trailerUrl: "https://www.youtube.com/results?search_query=The+Incredible+Hulk+trailer", poster: "./new%20The%20Incredible%20Hulk.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/video/epp1j1t1pj5ny47" }, { resolution: "2K", url: "https://vcloud.zip/d600hupzuqo0kgy" } ] },
@@ -45,55 +48,132 @@ document.addEventListener('DOMContentLoaded', () => {
   const introVideo = document.getElementById('intro-video');
   const moviesGrid = document.getElementById('movies-grid');
   const searchInput = document.getElementById('movie-search');
+  const clearSearchBtn = document.getElementById('clear-search');
   const noResults = document.getElementById('no-results');
+  const resetFilterBtn = document.getElementById('reset-filter-btn');
+  const phaseFilters = document.getElementById('phase-filters');
+  const moviesCountBadge = document.getElementById('movies-count');
   const scrollTopBtn = document.getElementById('scroll-top-btn');
   const header = document.querySelector('.header');
 
   let appShown = false;
   let currentSearch = '';
+  let currentPhase = 'all';
 
-  // 1. Intro Video & Transition
-  const unmuteVideo = () => {
-    if (introVideo) introVideo.muted = false;
-  };
-  document.addEventListener('click', unmuteVideo, { once: true });
+  // Render movie grid structure immediately
+  renderMovies();
 
+  // 1. Transition to App
   const showApp = () => {
     if (appShown) return;
     appShown = true;
-    introOverlay.style.opacity = '0';
-    setTimeout(() => {
-      introOverlay.classList.add('hidden');
-      appContent.classList.remove('hidden');
-      initCosmicBackground();
-      renderMovies();
-    }, 900);
+
+    // Release intro video resources
+    if (introVideo) {
+      try {
+        introVideo.pause();
+        introVideo.removeAttribute('src');
+        introVideo.load();
+      } catch (e) {}
+    }
+
+    // Start background canvas and hero video only after intro finishes
+    initCosmicBackground();
+    const heroVideo = document.getElementById('hero-video');
+    if (heroVideo) {
+      heroVideo.play().catch(e => console.log('Hero play deferred:', e));
+    }
+
+    if (introOverlay) {
+      introOverlay.style.opacity = '0';
+      introOverlay.style.pointerEvents = 'none';
+      setTimeout(() => {
+        introOverlay.classList.add('hidden');
+      }, 500);
+    }
   };
 
-  if (skipBtn) skipBtn.addEventListener('click', showApp);
-
-  if (introVideo) {
-    introVideo.addEventListener('ended', showApp);
-    const playPromise = introVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        console.warn("Autoplay prevented:", error);
-        showApp();
-      });
-    }
+  // Skip & Click listeners
+  if (skipBtn) {
+    skipBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showApp();
+    });
   }
 
+  if (introOverlay) {
+    introOverlay.addEventListener('click', showApp);
+    introOverlay.addEventListener('touchstart', showApp, { passive: true });
+  }
+
+  // 2. Select and play device-tailored video
+  if (introVideo) {
+    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const selectedSrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
+    const deviceType = isMobile ? 'MOBILE (iPhone/Android)' : 'LAPTOP / DESKTOP';
+    const videoFileName = isMobile ? 'starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
+
+    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'laptop');
+    introVideo.setAttribute('data-video-file', videoFileName);
+
+    console.log(
+      `%c🎬 MCU INTRO LOADED %c ${deviceType} %c Video: ${videoFileName} (Viewport: ${window.innerWidth}px)`,
+      'background: #e62429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'background: #1e1e24; color: #00d26a; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
+      'color: #f1f1f1; font-weight: normal;'
+    );
+
+    introVideo.muted = true;
+    introVideo.setAttribute('muted', '');
+    introVideo.setAttribute('playsinline', '');
+    introVideo.setAttribute('webkit-playsinline', '');
+    introVideo.src = selectedSrc;
+    introVideo.load();
+
+    const attemptPlay = () => {
+      const p = introVideo.play();
+      if (p !== undefined) {
+        p.catch(err => {
+          console.warn("Autoplay blocked/waiting:", err);
+        });
+      }
+    };
+
+    attemptPlay();
+    introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
+    introVideo.addEventListener('canplay', attemptPlay, { once: true });
+    introVideo.addEventListener('ended', showApp);
+    introVideo.addEventListener('error', showApp);
+
+    // Audio unmute on first interaction
+    const unmute = () => {
+      introVideo.muted = false;
+    };
+    document.addEventListener('click', unmute, { once: true });
+    document.addEventListener('touchstart', unmute, { once: true, passive: true });
+  }
+
+  // Fallback timer: if video fails to play within 4.5 seconds or stays black, smoothly dismiss overlay
   setTimeout(() => {
-    if (introVideo && introVideo.currentTime > 0 && !introVideo.paused) {
+    if (!appShown && introVideo && (introVideo.paused || introVideo.currentTime === 0)) {
       showApp();
     }
-  }, 20000);
+  }, 4500);
 
-  // 2. Interactive Cosmic Canvas Background Animation
+  // Safety absolute timeout
+  setTimeout(() => {
+    if (!appShown) {
+      showApp();
+    }
+  }, 7500);
+
+  // 2. Interactive Cosmic Canvas Background (Adaptive for Mobile / Tablet / Desktop)
   function initCosmicBackground() {
     const canvas = document.getElementById('cosmic-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
@@ -101,21 +181,42 @@ document.addEventListener('DOMContentLoaded', () => {
     let mouseY = height / 2;
     let targetMouseX = mouseX;
     let targetMouseY = mouseY;
+    let isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    let isVisible = true;
+    let animFrameId = null;
 
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-    });
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
 
     window.addEventListener('mousemove', e => {
       targetMouseX = e.clientX;
       targetMouseY = e.clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', e => {
+      if (e.touches && e.touches[0]) {
+        targetMouseX = e.touches[0].clientX;
+        targetMouseY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+      if (isVisible && !animFrameId) {
+        animFrameId = requestAnimationFrame(animateParticles);
+      }
     });
 
-    // Particle pool
-    const particleCount = Math.min(Math.floor((width * height) / 18000), 75);
-    const particles = [];
+    // Particle pool tuned for performance on mobile/tablets
+    const isMobile = width < 768;
+    const particleCount = isMobile
+      ? Math.min(Math.floor((width * height) / 32000), 28)
+      : Math.min(Math.floor((width * height) / 18000), 65);
 
+    const particles = [];
     const colors = [
       'rgba(237, 29, 36, ',   // Marvel Red
       'rgba(245, 158, 11, ',  // Amber Gold
@@ -127,22 +228,29 @@ document.addEventListener('DOMContentLoaded', () => {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        radius: Math.random() * 2 + 0.6,
+        radius: Math.random() * 1.8 + 0.6,
         colorBase: colors[Math.floor(Math.random() * colors.length)],
         alpha: Math.random() * 0.6 + 0.2,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45 - 0.15, // slight upward drift
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4 - 0.12,
         pulseSpeed: Math.random() * 0.02 + 0.008,
         pulseVal: Math.random() * Math.PI,
       });
     }
 
     function animateParticles() {
+      if (!isVisible) {
+        animFrameId = null;
+        return;
+      }
+
       ctx.clearRect(0, 0, width, height);
 
-      // Smooth mouse interpolation
+      // Smooth mouse / touch interpolation
       mouseX += (targetMouseX - mouseX) * 0.05;
       mouseY += (targetMouseY - mouseY) * 0.05;
+
+      const repulsionRadius = isMobile ? 120 : 170;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -150,41 +258,38 @@ document.addEventListener('DOMContentLoaded', () => {
         p.y += p.vy;
         p.pulseVal += p.pulseSpeed;
 
-        // Wrap boundaries
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
-        if (p.y < -20) p.y = height + 20;
-        if (p.y > height + 20) p.y = -20;
+        // Wrap screen edges
+        if (p.x < -15) p.x = width + 15;
+        if (p.x > width + 15) p.x = -15;
+        if (p.y < -15) p.y = height + 15;
+        if (p.y > height + 15) p.y = -15;
 
-        // Subtle mouse repulsion/attraction field
+        // Subtle repulsion from cursor / touch
         const dx = p.x - mouseX;
         const dy = p.y - mouseY;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 180 && dist > 0) {
-          const force = (180 - dist) / 180;
-          p.x += (dx / dist) * force * 0.8;
-          p.y += (dy / dist) * force * 0.8;
+        if (dist < repulsionRadius && dist > 0) {
+          const force = (repulsionRadius - dist) / repulsionRadius;
+          p.x += (dx / dist) * force * 0.7;
+          p.y += (dy / dist) * force * 0.7;
         }
 
         const dynamicAlpha = p.alpha * (0.6 + 0.4 * Math.sin(p.pulseVal));
 
-        // Draw particle with soft glow
+        // High-performance particle draw without expensive CPU shadowBlur
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `${p.colorBase}${dynamicAlpha})`;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = `${p.colorBase}0.8)`;
         ctx.fill();
       }
 
-      ctx.shadowBlur = 0;
-      requestAnimationFrame(animateParticles);
+      animFrameId = requestAnimationFrame(animateParticles);
     }
 
-    animateParticles();
+    animFrameId = requestAnimationFrame(animateParticles);
   }
 
-  // 3. Render Movies with 3D Tilt & Micro-Animations
+  // 3. Render Movies
   function renderMovies() {
     if (!moviesGrid) return;
     moviesGrid.innerHTML = '';
@@ -192,14 +297,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const query = currentSearch.toLowerCase().trim();
 
     const filtered = movies.filter(movie => {
+      // Phase match
+      const phaseMatch = currentPhase === 'all' || movie.phase === parseInt(currentPhase, 10);
+      if (!phaseMatch) return false;
+
+      // Query search match
+      if (!query) return true;
       return (
-        !query ||
         movie.title.toLowerCase().includes(query) ||
         movie.year.includes(query) ||
         `phase ${movie.phase}`.includes(query)
       );
     });
 
+    // Update count badge
+    if (moviesCountBadge) {
+      moviesCountBadge.textContent = `${filtered.length} Title${filtered.length === 1 ? '' : 's'}`;
+    }
 
     if (filtered.length === 0) {
       if (noResults) noResults.classList.remove('hidden');
@@ -211,42 +325,44 @@ document.addEventListener('DOMContentLoaded', () => {
     filtered.forEach((movie, index) => {
       const card = document.createElement('div');
       card.className = 'movie-card';
-      card.style.animationDelay = `${index * 35}ms`;
+      card.style.animationDelay = `${Math.min(index * 25, 400)}ms`;
 
       card.innerHTML = `
         <div class="card-glow"></div>
-        <div class="card-image-wrap">
+        <div class="card-image-wrap" role="button" aria-label="View details for ${movie.title}" tabindex="0">
+          <span class="card-phase-badge">Phase ${movie.phase}</span>
           <img 
             src="${movie.poster}" 
             alt="${movie.title}" 
             class="card-image" 
             loading="lazy" 
-            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'500\\' height=\\'750\\'><defs><linearGradient id=\\'grad\\' x1=\\'0%\\' y1=\\'0%\\' x2=\\'0%\\' y2=\\'100%\\'><stop offset=\\'0%\\' stop-color=\\'%23330000\\' /><stop offset=\\'100%\\' stop-color=\\'%2308080a\\' /></linearGradient></defs><rect width=\\'500\\' height=\\'750\\' fill=\\'url(%23grad)\\'/><text x=\\'50%\\' y=\\'50%\\' font-family=\\'Outfit, sans-serif\\' font-size=\\'40\\' font-weight=\\'bold\\' fill=\\'%23ED1D24\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${encodeURIComponent(movie.title.substring(0, 20))}${movie.title.length > 20 ? '...' : ''}</text></svg>';" 
+            decoding="async"
+            onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'500\\' height=\\'750\\'><defs><linearGradient id=\\'grad\\' x1=\\'0%\\' y1=\\'0%\\' x2=\\'0%\\' y2=\\'100%\\'><stop offset=\\'0%\\' stop-color=\\'%23250505\\' /><stop offset=\\'100%\\' stop-color=\\'%2308080a\\' /></linearGradient></defs><rect width=\\'500\\' height=\\'750\\' fill=\\'url(%23grad)\\'/><text x=\\'50%\\' y=\\'50%\\' font-family=\\'Outfit, sans-serif\\' font-size=\\'36\\' font-weight=\\'bold\\' fill=\\'%23ED1D24\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${encodeURIComponent(movie.title.substring(0, 20))}${movie.title.length > 20 ? '...' : ''}</text></svg>';" 
           />
         </div>
         <div class="card-content">
           <h3 class="card-title" title="${movie.title}">${movie.title}</h3>
           <div class="card-meta">
             <span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               ${movie.year}
             </span>
             <span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               ${movie.duration}
             </span>
           </div>
           <div class="card-actions">
-            <a href="${movie.trailerUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary trailer-btn" title="Watch Trailer">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <a href="${movie.trailerUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary trailer-btn" title="Watch ${movie.title} Trailer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
               Trailer
             </a>
 
             ${movie.downloads && movie.downloads.length > 0 ? `
               <div class="dropdown">
-                <button class="btn btn-primary" aria-haspopup="true">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  Download ▾
+                <button class="btn btn-primary download-toggle-btn" aria-haspopup="true" aria-expanded="false" title="Download Options">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                  Get ▾
                 </button>
                 <div class="dropdown-content">
                   ${movie.downloads.map(dl => `
@@ -257,8 +373,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             ` : `
-              <button class="btn btn-secondary" style="opacity: 0.65; cursor: not-allowed;" onclick="alert('Download link coming soon for ${movie.title}!')">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <button class="btn btn-secondary" style="opacity: 0.6; cursor: not-allowed;" onclick="alert('Download link coming soon for ${movie.title}!')" title="Download link pending">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Pending
               </button>
             `}
@@ -266,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
+      // Touch & Click handler for Poster Tap
       const imageWrap = card.querySelector('.card-image-wrap');
       if (imageWrap) {
         let clickTimeout = null;
@@ -291,8 +408,31 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(clickTimeout);
             clickTimeout = null;
           }
-          const query = encodeURIComponent(`${movie.title} ${movie.year} Marvel movie details`);
-          window.open(`https://www.google.com/search?q=${query}`, '_blank');
+          const queryParam = encodeURIComponent(`${movie.title} ${movie.year} Marvel movie details`);
+          window.open(`https://www.google.com/search?q=${queryParam}`, '_blank');
+        });
+      }
+
+      // Touch & Click Dropdown Toggle
+      const downloadBtn = card.querySelector('.download-toggle-btn');
+      const dropdown = card.querySelector('.dropdown');
+      if (downloadBtn && dropdown) {
+        downloadBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = dropdown.classList.contains('open');
+
+          // Close all other open dropdowns first
+          document.querySelectorAll('.dropdown.open').forEach(d => {
+            if (d !== dropdown) {
+              d.classList.remove('open');
+              const b = d.querySelector('.download-toggle-btn');
+              if (b) b.setAttribute('aria-expanded', 'false');
+            }
+          });
+
+          // Toggle current dropdown
+          dropdown.classList.toggle('open', !isOpen);
+          downloadBtn.setAttribute('aria-expanded', (!isOpen).toString());
         });
       }
 
@@ -300,34 +440,105 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 4. Search Handler
+  // Close dropdowns on outside tap/click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown.open').forEach(d => {
+      d.classList.remove('open');
+      const b = d.querySelector('.download-toggle-btn');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // 4. Search Handler with Clear Button
   if (searchInput) {
     searchInput.addEventListener('input', e => {
       currentSearch = e.target.value;
+      if (clearSearchBtn) {
+        clearSearchBtn.classList.toggle('hidden', currentSearch.length === 0);
+      }
+      renderMovies();
+    });
+  }
+
+  if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+      if (searchInput) {
+        searchInput.value = '';
+        currentSearch = '';
+        clearSearchBtn.classList.add('hidden');
+        searchInput.focus();
+        renderMovies();
+      }
+    });
+  }
+
+  // 5. Phase Filter Chips Handler
+  if (phaseFilters) {
+    phaseFilters.addEventListener('click', (e) => {
+      const chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+
+      const phase = chip.getAttribute('data-phase');
+      if (!phase) return;
+
+      currentPhase = phase;
+
+      // Update active chip classes
+      phaseFilters.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+
+      // Scroll chip into view smoothly on mobile if needed
+      chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+      renderMovies();
+    });
+  }
+
+  // Reset Filters in empty state
+  if (resetFilterBtn) {
+    resetFilterBtn.addEventListener('click', () => {
+      currentSearch = '';
+      currentPhase = 'all';
+      if (searchInput) {
+        searchInput.value = '';
+        if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+      }
+      if (phaseFilters) {
+        phaseFilters.querySelectorAll('.filter-chip').forEach(c => {
+          c.classList.toggle('active', c.getAttribute('data-phase') === 'all');
+        });
+      }
       renderMovies();
     });
   }
 
   // 6. Header Scrolled State & Scroll-to-Top Button
+  let scrollTicking = false;
   window.addEventListener('scroll', () => {
-    const scrollPos = window.scrollY;
+    if (!scrollTicking) {
+      window.requestAnimationFrame(() => {
+        const scrollPos = window.scrollY || window.pageYOffset;
 
-    if (header) {
-      if (scrollPos > 50) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-    }
+        if (header) {
+          if (scrollPos > 40) {
+            header.classList.add('scrolled');
+          } else {
+            header.classList.remove('scrolled');
+          }
+        }
 
-    if (scrollTopBtn) {
-      if (scrollPos > 350) {
-        scrollTopBtn.classList.add('visible');
-      } else {
-        scrollTopBtn.classList.remove('visible');
-      }
+        if (scrollTopBtn) {
+          if (scrollPos > 300) {
+            scrollTopBtn.classList.add('visible');
+          } else {
+            scrollTopBtn.classList.remove('visible');
+          }
+        }
+        scrollTicking = false;
+      });
+      scrollTicking = true;
     }
-  });
+  }, { passive: true });
 
   if (scrollTopBtn) {
     scrollTopBtn.addEventListener('click', () => {
