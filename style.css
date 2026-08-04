@@ -183,7 +183,7 @@ button, a, input {
   width: 100dvw;
   height: 100vh;
   height: 100dvh;
-  background-color: #000;
+  background-color: #060608;
   z-index: 99999;
   display: flex;
   justify-content: center;
@@ -198,6 +198,32 @@ button, a, input {
   pointer-events: none;
 }
 
+.intro-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #060608;
+  z-index: 1;
+}
+
+.intro-logo-pulse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: pulseLogo 1.6s infinite ease-in-out;
+  transform: scale(1.3);
+}
+
+@keyframes pulseLogo {
+  0%, 100% { opacity: 0.35; transform: scale(1.15); }
+  50% { opacity: 0.95; transform: scale(1.22); filter: drop-shadow(0 0 24px var(--primary-glow)); }
+}
+
 .video-container {
   position: relative;
   width: 100%;
@@ -205,14 +231,15 @@ button, a, input {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: transparent;
+  z-index: 2;
 }
 
 #intro-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #000;
+  background: transparent;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }

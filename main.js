@@ -135,6 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+    let hasPlayed = false;
+    introVideo.addEventListener('timeupdate', () => {
+      if (introVideo.currentTime > 0.1) {
+        hasPlayed = true;
+      }
+    });
+
     attemptPlay();
     introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
     introVideo.addEventListener('canplay', attemptPlay, { once: true });
@@ -148,22 +155,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Unmute or dismiss on interaction
+    // Click anywhere on overlay to enter or unmute
     introOverlay.addEventListener('click', () => {
-      if (introVideo) introVideo.muted = false;
-    });
-
-    // Fallback if video is blocked
-    setTimeout(() => {
-      if (!appShown && introVideo && (introVideo.paused || introVideo.currentTime === 0)) {
+      if (introVideo && !introVideo.paused) {
+        introVideo.muted = false;
+      } else {
         showApp();
       }
-    }, 4500);
+    });
 
-    // Absolute timeout
+    // Fast fallback: if video is paused/stuck and hasn't started playing within 2.2 seconds, open the site
+    setTimeout(() => {
+      if (!appShown && !hasPlayed && (introVideo.paused || introVideo.currentTime === 0)) {
+        console.log("Intro video did not start within 2.2s, transitioning to app.");
+        showApp();
+      }
+    }, 2200);
+
+    // Maximum safe timeout
     setTimeout(() => {
       if (!appShown) showApp();
-    }, 8000);
+    }, 6000);
   } else {
     initCosmicBackground();
   }
