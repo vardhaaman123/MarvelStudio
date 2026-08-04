@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Transition to main app
+  // Transition to main app
   const showApp = () => {
     if (appShown) return;
     appShown = true;
@@ -93,8 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
       introOverlay.style.opacity = '0';
       introOverlay.style.pointerEvents = 'none';
       setTimeout(() => {
+        introOverlay.style.display = 'none';
         introOverlay.classList.add('hidden');
-      }, 600);
+      }, 500);
     }
   };
 
@@ -140,10 +142,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (introVideo.currentTime > 0.1) {
         hasPlayed = true;
       }
+      // Instant transition 0.3s before duration finishes or when ended
+      if (introVideo.duration && introVideo.duration > 0 && introVideo.currentTime >= (introVideo.duration - 0.35)) {
+        showApp();
+      }
     });
 
     attemptPlay();
-    introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
+
+    introVideo.addEventListener('loadedmetadata', () => {
+      attemptPlay();
+      if (introVideo.duration && introVideo.duration > 0) {
+        setTimeout(showApp, (introVideo.duration + 0.2) * 1000);
+      }
+    }, { once: true });
+
     introVideo.addEventListener('canplay', attemptPlay, { once: true });
     introVideo.addEventListener('ended', showApp);
     introVideo.addEventListener('error', handleError);
@@ -155,13 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Click anywhere on overlay to enter or unmute
+    // Click anywhere on overlay to instantly enter
     introOverlay.addEventListener('click', () => {
-      if (introVideo && !introVideo.paused) {
-        introVideo.muted = false;
-      } else {
-        showApp();
-      }
+      showApp();
     });
 
     // Fast fallback: if video is paused/stuck and hasn't started playing within 2.2 seconds, open the site
@@ -175,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Maximum safe timeout
     setTimeout(() => {
       if (!appShown) showApp();
-    }, 6000);
+    }, 5500);
   } else {
     initCosmicBackground();
   }
