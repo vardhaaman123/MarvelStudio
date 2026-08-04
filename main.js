@@ -39,7 +39,7 @@ const movies = [
 ];
 
 const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './starting_video_for_mobile_web.mp4';
+const mobileIntroVideo = './new_starting_video_for_mobile_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
   const introOverlay = document.getElementById('intro-overlay');
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isMobile = getIsMobile();
     const selectedSrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
     const deviceLabel = isMobile ? '📱 MOBILE' : '💻 LAPTOP / DESKTOP';
-    const videoFile = isMobile ? 'starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
+    const videoFile = isMobile ? 'new_starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
 
     introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'laptop');
     introVideo.setAttribute('data-src-file', videoFile);
