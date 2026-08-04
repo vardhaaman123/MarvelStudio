@@ -122,10 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.src = selectedSrc;
     introVideo.load();
 
-    const attemptPlay = () => {
-      const p = introVideo.play();
-      if (p !== undefined) {
-        p.catch(() => {});
+    let hasTriedFallback = false;
+    const handleError = (e) => {
+      console.warn("Intro video playback error:", e);
+      if (!hasTriedFallback && isMobile) {
+        hasTriedFallback = true;
+        introVideo.src = './new_starting_video_for_mobile.mp4';
+        introVideo.load();
+        attemptPlay();
+      } else {
+        showApp();
       }
     };
 
@@ -133,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('loadedmetadata', attemptPlay, { once: true });
     introVideo.addEventListener('canplay', attemptPlay, { once: true });
     introVideo.addEventListener('ended', showApp);
-    introVideo.addEventListener('error', showApp);
+    introVideo.addEventListener('error', handleError);
 
     if (skipBtn) {
       skipBtn.addEventListener('click', (e) => {
