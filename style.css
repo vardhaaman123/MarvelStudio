@@ -568,28 +568,28 @@ button, a, input {
   left: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  background: rgba(10, 10, 14, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(245, 197, 24, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 10px rgba(245, 197, 24, 0.12);
-  padding: 3px 8px;
-  border-radius: 8px;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
   z-index: 3;
   pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
 }
 
 .imdb-tag {
   background: #f5c518;
   color: #000;
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 900;
-  padding: 1px 4px;
-  border-radius: 3px;
+  padding: 2px 5px;
+  border-radius: 4px;
   letter-spacing: 0.4px;
   line-height: 1.1;
   text-transform: uppercase;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
 }
 
 .imdb-score {
@@ -597,14 +597,15 @@ button, a, input {
   align-items: center;
   gap: 3px;
   color: #f5c518;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.3px;
   line-height: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 8px rgba(0, 0, 0, 0.7);
 }
 
 .imdb-score svg {
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.8));
 }
 
 /* Card Content Area */
@@ -948,19 +949,21 @@ button, a, input {
   .card-imdb-badge {
     top: 6px;
     left: 6px;
-    font-size: 0.65rem;
-    padding: 2px 6px;
-    border-radius: 6px;
-    gap: 3px;
+    padding: 0;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 
   .imdb-tag {
-    font-size: 0.58rem;
-    padding: 1px 3px;
+    font-size: 0.6rem;
+    padding: 1.5px 4px;
+    border-radius: 3px;
   }
 
   .imdb-score {
-    font-size: 0.7rem;
+    font-size: 0.76rem;
     gap: 2px;
   }
 
