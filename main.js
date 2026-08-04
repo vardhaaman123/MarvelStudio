@@ -61,9 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Render movies immediately in background
   renderMovies();
 
-  // Function to detect whether user is on mobile or laptop
+  // Function to detect whether user is on mobile (phones/tablets) or laptop/desktop
   const getIsMobile = () => {
-    return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isSmallScreen = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
+    const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
+    const isTouchMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024;
+    return isSmallScreen || isMobileAgent || isTouchMobile;
   };
 
   // Transition to main app
