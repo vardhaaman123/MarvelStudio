@@ -142,8 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (introVideo.currentTime > 0.1) {
         hasPlayed = true;
       }
-      // Instant transition after 2 seconds or when ended
-      if (introVideo.currentTime >= 2 || (introVideo.duration && introVideo.currentTime >= (introVideo.duration - 0.35))) {
+      // Transition after 2s on mobile, or full duration on desktop
+      const maxTime = isMobile ? 2 : (introVideo.duration ? introVideo.duration - 0.35 : 5);
+      if (introVideo.currentTime >= maxTime || (introVideo.duration && introVideo.currentTime >= (introVideo.duration - 0.35))) {
         showApp();
       }
     });
@@ -153,7 +154,8 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('loadedmetadata', () => {
       introVideo.play().catch(e => console.warn("Auto-play failed:", e));
       if (introVideo.duration && introVideo.duration > 0) {
-        const timeoutDuration = Math.min(2000, (introVideo.duration + 0.2) * 1000);
+        const durationMs = (introVideo.duration + 0.2) * 1000;
+        const timeoutDuration = isMobile ? Math.min(2000, durationMs) : durationMs;
         setTimeout(showApp, timeoutDuration);
       }
     }, { once: true });
@@ -195,10 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 1000);
 
-    // Maximum safe timeout
+    // Maximum safe timeout (5.5s for desktop, 2.2s for mobile)
     setTimeout(() => {
       if (!appShown) showApp();
-    }, 2200);
+    }, isMobile ? 2200 : 5500);
   } else {
     initCosmicBackground();
   }
