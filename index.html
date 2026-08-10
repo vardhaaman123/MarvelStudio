@@ -52,6 +52,11 @@
           <source src="./new_starting_video_for_mobile_web.mp4" media="(max-width: 768px)" type="video/mp4">
           <source src="./new_opening_marvel_video_web.mp4" media="(min-width: 769px)" type="video/mp4">
         </video>
+        <script>
+          // Force immediate playback on mobile to bypass delayed native autoplay and ignored preload
+          var v = document.getElementById('intro-video');
+          if (v) { v.play().catch(function(e){}); }
+        </script>
       </div>
       <button id="skip-intro" class="skip-btn" type="button" aria-label="Skip Intro" onclick="event.stopPropagation(); window.skipIntroVideo();" ontouchstart="event.stopPropagation(); window.skipIntroVideo();">
         <span>Skip</span>
