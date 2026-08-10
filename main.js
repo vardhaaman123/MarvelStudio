@@ -129,20 +129,12 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.setAttribute('muted', '');
     introVideo.setAttribute('playsinline', '');
     introVideo.setAttribute('webkit-playsinline', '');
-    introVideo.src = selectedSrc;
-    introVideo.load();
+    // Source is now natively handled by HTML <source> tags to eliminate JS-execution delay
 
     let hasTriedFallback = false;
     const handleError = (e) => {
       console.warn("Intro video playback error:", e);
-      if (!hasTriedFallback && isMobile) {
-        hasTriedFallback = true;
-        introVideo.src = './new_starting_video_for_mobile.mp4';
-        introVideo.load();
-        attemptPlay();
-      } else {
-        showApp();
-      }
+      showApp();
     };
 
     let hasPlayed = false;
@@ -156,17 +148,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    attemptPlay();
+    introVideo.play().catch(e => console.warn("Auto-play failed:", e));
 
     introVideo.addEventListener('loadedmetadata', () => {
-      attemptPlay();
+      introVideo.play().catch(e => console.warn("Auto-play failed:", e));
       if (introVideo.duration && introVideo.duration > 0) {
         const timeoutDuration = Math.min(2000, (introVideo.duration + 0.2) * 1000);
         setTimeout(showApp, timeoutDuration);
       }
     }, { once: true });
 
-    introVideo.addEventListener('canplay', attemptPlay, { once: true });
+    introVideo.addEventListener('canplay', () => {
+      introVideo.play().catch(e => console.warn("Auto-play failed:", e));
+    }, { once: true });
     introVideo.addEventListener('ended', showApp);
     introVideo.addEventListener('error', handleError);
 
