@@ -150,8 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (introVideo.currentTime > 0.1) {
         hasPlayed = true;
       }
-      // Instant transition 0.3s before duration finishes or when ended
-      if (introVideo.duration && introVideo.duration > 0 && introVideo.currentTime >= (introVideo.duration - 0.35)) {
+      // Instant transition after 2 seconds or when ended
+      if (introVideo.currentTime >= 2 || (introVideo.duration && introVideo.currentTime >= (introVideo.duration - 0.35))) {
         showApp();
       }
     });
@@ -161,7 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.addEventListener('loadedmetadata', () => {
       attemptPlay();
       if (introVideo.duration && introVideo.duration > 0) {
-        setTimeout(showApp, (introVideo.duration + 0.2) * 1000);
+        const timeoutDuration = Math.min(2000, (introVideo.duration + 0.2) * 1000);
+        setTimeout(showApp, timeoutDuration);
       }
     }, { once: true });
 
@@ -192,18 +193,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, { once: true });
 
-    // Fast fallback: if video is paused/stuck and hasn't started playing within 2.2 seconds, open the site
+    // Fast fallback: if video is paused/stuck and hasn't started playing within 1.0 seconds, open the site
     setTimeout(() => {
       if (!appShown && !hasPlayed && (introVideo.paused || introVideo.currentTime === 0)) {
-        console.log("Intro video did not start within 2.2s, transitioning to app.");
+        console.log("Intro video did not start within 1.0s, transitioning to app.");
         showApp();
       }
-    }, 2200);
+    }, 1000);
 
     // Maximum safe timeout
     setTimeout(() => {
       if (!appShown) showApp();
-    }, 5500);
+    }, 2200);
   } else {
     initCosmicBackground();
   }
