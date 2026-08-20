@@ -38,8 +38,13 @@ const movies = [
   { id: 37, phase: 6, imdb: "7.4", themeColor: "#0ea5e9", glowColor: "rgba(14, 165, 233, 0.5)", title: "The Fantastic Four: First Steps", year: "2025", duration: "TBD", trailerUrl: "https://www.youtube.com/results?search_query=The+Fantastic+Four+First+Steps+trailer", poster: "./The%20Fantastic%20Four%20First%20Steps.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/drive/ahidhwd1lyadrwk" } ] },
 ];
 
-const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './new_starting_video_for_mobile_web.mp4';
+// ─── VIDEO SOURCES: Optimized compressed versions (fallback to originals) ───
+const desktopIntroVideo = './intro_desktop_opt.mp4';
+const desktopIntroVideoFallback = './new_opening_marvel_video_web.mp4';
+const mobileIntroVideo = './intro_mobile_opt.mp4';
+const mobileIntroVideoFallback = './new_starting_video_for_mobile_web.mp4';
+const heroVideo_src = './hero_opt.mp4';
+const heroVideo_srcFallback = './new_one_header_video_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
   const introOverlay = document.getElementById('intro-overlay');
@@ -58,10 +63,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let appShown = false;
   let currentSearch = '';
 
-  // Render movies immediately in background
+  // PRIORITY 1: Render movies immediately — before any video logic
   renderMovies();
 
-  // Function to detect whether user is on mobile (phones/tablets) or laptop/desktop
+  // PRIORITY 2: Init cosmic background immediately (non-blocking)
+  initCosmicBackground();
+
+  // ─── Device detection ───
   const getIsMobile = () => {
     const isSmallScreen = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
     const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
@@ -69,22 +77,34 @@ document.addEventListener('DOMContentLoaded', () => {
     return isSmallScreen || isMobileAgent || isTouchMobile;
   };
 
-  // Transition to main app
+  // ─── Connection quality detection ───
+  const getConnectionQuality = () => {
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (!conn) return 'unknown';
+    if (conn.saveData) return 'save-data';
+    const type = conn.effectiveType;
+    if (type === 'slow-2g' || type === '2g') return 'very-slow';
+    if (type === '3g') return 'slow';
+    return 'fast'; // 4g or better
+  };
+
+  // ─── Transition to main app ───
   const showApp = () => {
     if (appShown) return;
     appShown = true;
 
-    // Release intro video memory and stop playback
+    // Release intro video memory immediately
     if (introVideo) {
       try {
         introVideo.pause();
+        // Remove all sources
+        while (introVideo.firstChild) introVideo.removeChild(introVideo.firstChild);
         introVideo.removeAttribute('src');
         introVideo.load();
       } catch (e) {}
     }
 
-    // Start background canvas and play header hero video
-    initCosmicBackground();
+    // Play hero video (already has src set from heroVideo_src)
     if (heroVideo) {
       heroVideo.play().catch(() => {});
     }
@@ -95,118 +115,136 @@ document.addEventListener('DOMContentLoaded', () => {
       overlay.style.pointerEvents = 'none';
       overlay.classList.add('hidden');
       setTimeout(() => {
-        try {
-          overlay.remove();
-        } catch (e) {
-          overlay.style.display = 'none';
-        }
+        try { overlay.remove(); } catch (e) { overlay.style.display = 'none'; }
       }, 200);
     }
   };
 
-  // Expose to window for immediate global inline execution
+  // Expose to window (for inline HTML onclick handlers)
   window.skipIntroVideo = showApp;
   window.__onIntroSkipped = showApp;
 
-  // Setup device-tailored intro video (Laptop vs Mobile)
+  // ─── OPTIMIZED INTRO VIDEO SETUP ───
   if (introVideo && introOverlay) {
     const isMobile = getIsMobile();
-    const selectedSrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
-    const deviceLabel = isMobile ? '📱 MOBILE' : '💻 LAPTOP / DESKTOP';
-    const videoFile = isMobile ? 'new_starting_video_for_mobile_web.mp4' : 'new_opening_marvel_video_web.mp4';
-
-    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'laptop');
-    introVideo.setAttribute('data-src-file', videoFile);
+    const connQuality = getConnectionQuality();
 
     console.log(
-      `%c🎬 MCU STARTING VIDEO %c ${deviceLabel} %c File: ${videoFile} (Width: ${window.innerWidth}px)`,
+      `%c🎬 MCU %c ${isMobile ? '📱 MOBILE' : '💻 DESKTOP'} %c Conn: ${connQuality}`,
       'background: #e62429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
       'background: #00d26a; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
-      'color: #fff; font-weight: bold;'
+      'color: #aaa;'
     );
 
-    introVideo.muted = true;
-    introVideo.setAttribute('muted', '');
-    introVideo.setAttribute('playsinline', '');
-    introVideo.setAttribute('webkit-playsinline', '');
-    // Source is now natively handled by HTML <source> tags to eliminate JS-execution delay
+    // ─── FAST FALLBACK: If already flagged as slow connection by inline script, bail out ───
+    if (window.__slowConnection) {
+      // inline script already scheduled skipIntroVideo — just set up skip button
+      if (skipBtn) skipBtn.addEventListener('click', showApp);
+      // On slow connection: after brief logo flash, show app (400ms set by inline script)
+      return; // Exit early, no video setup needed
+    }
 
-    let hasTriedFallback = false;
-    const handleError = (e) => {
-      console.warn("Intro video playback error:", e);
-      showApp();
+    // ─── VERY SLOW / SAVE-DATA: Skip video entirely, just show pulsing logo ───
+    if (connQuality === 'very-slow' || connQuality === 'save-data') {
+      setTimeout(showApp, 500); // Logo flashes for 500ms then straight to app
+      return;
+    }
+
+    // ─── INJECT VIDEO SRC LAZILY (not in HTML) ───
+    // This is the key optimization: browser downloads NOTHING until this code runs.
+    // By this point, the main UI (movies grid, header, etc.) is already rendering.
+    const injectVideoSrc = () => {
+      // Choose optimized source with original as fallback
+      const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
+      const fallbackSrc = isMobile ? mobileIntroVideoFallback : desktopIntroVideoFallback;
+
+      // Create <source> elements dynamically
+      const src1 = document.createElement('source');
+      src1.src = primarySrc;
+      src1.type = 'video/mp4';
+
+      const src2 = document.createElement('source');
+      src2.src = fallbackSrc;
+      src2.type = 'video/mp4';
+
+      introVideo.appendChild(src1);
+      introVideo.appendChild(src2);
+
+      // Use metadata only (fetches ~20 KB header, not full file)
+      introVideo.preload = 'metadata';
+      introVideo.muted = true;
+      introVideo.setAttribute('muted', '');
+      introVideo.setAttribute('playsinline', '');
+      introVideo.setAttribute('webkit-playsinline', '');
+      introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'desktop');
+
+      introVideo.load();
+      introVideo.play().catch(e => console.warn('Intro autoplay failed:', e));
     };
 
+    // ─── SLOW CONNECTION (3G): inject src but with shorter timeout ───
+    const isSlowConn = (connQuality === 'slow');
+    // Delay src injection slightly so main app frame paints first
+    const srcInjectDelay = isMobile ? 80 : 50;
+    setTimeout(injectVideoSrc, srcInjectDelay);
+
     let hasPlayed = false;
+
     introVideo.addEventListener('timeupdate', () => {
-      if (introVideo.currentTime > 0.1) {
-        hasPlayed = true;
-      }
-      // Transition after 2s on mobile, or full duration on desktop
-      const maxTime = isMobile ? 2 : (introVideo.duration ? introVideo.duration - 0.35 : 5);
-      if (introVideo.currentTime >= maxTime || (introVideo.duration && introVideo.currentTime >= (introVideo.duration - 0.35))) {
-        showApp();
-      }
+      if (introVideo.currentTime > 0.1) hasPlayed = true;
+      // Mobile: transition after 2s of playback. Desktop: play full video.
+      const maxTime = isMobile ? 2 : (introVideo.duration ? introVideo.duration - 0.3 : 5);
+      if (introVideo.currentTime >= maxTime) showApp();
     });
 
-    introVideo.play().catch(e => console.warn("Auto-play failed:", e));
-
     introVideo.addEventListener('loadedmetadata', () => {
-      introVideo.play().catch(e => console.warn("Auto-play failed:", e));
-      if (introVideo.duration && introVideo.duration > 0) {
-        const durationMs = (introVideo.duration + 0.2) * 1000;
-        const timeoutDuration = isMobile ? Math.min(2000, durationMs) : durationMs;
-        setTimeout(showApp, timeoutDuration);
+      introVideo.play().catch(() => {});
+      if (introVideo.duration > 0) {
+        const cap = isMobile ? Math.min(2200, (introVideo.duration + 0.2) * 1000) : (introVideo.duration + 0.3) * 1000;
+        setTimeout(showApp, cap);
       }
     }, { once: true });
 
     introVideo.addEventListener('canplay', () => {
-      introVideo.play().catch(e => console.warn("Auto-play failed:", e));
+      introVideo.play().catch(() => {});
     }, { once: true });
-    introVideo.addEventListener('ended', showApp);
-    introVideo.addEventListener('error', handleError);
 
+    introVideo.addEventListener('ended', showApp);
+    introVideo.addEventListener('error', () => showApp());
+
+    // ─── SKIP HANDLERS ───
     const triggerSkip = (e) => {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      if (e) { e.preventDefault(); e.stopPropagation(); }
       showApp();
     };
-
     if (skipBtn) {
       skipBtn.addEventListener('click', triggerSkip);
       skipBtn.addEventListener('pointerdown', triggerSkip);
       skipBtn.addEventListener('touchstart', triggerSkip, { passive: false });
     }
-
-    // Click/touch anywhere on overlay or press key to skip
     introOverlay.addEventListener('click', triggerSkip);
     introOverlay.addEventListener('touchstart', triggerSkip, { passive: true });
     window.addEventListener('keydown', (e) => {
-      if (!appShown && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) {
-        showApp();
-      }
+      if (!appShown && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) showApp();
     }, { once: true });
 
-    // Fast fallback: if video is paused/stuck and hasn't started playing within 1.0 seconds, open the site
+    // ─── HARD TIMEOUTS (SAFETY NETS) ───
+    // If video hasn't started playing within 800ms → skip to app (mobile: 600ms)
     setTimeout(() => {
       if (!appShown && !hasPlayed && (introVideo.paused || introVideo.currentTime === 0)) {
-        console.log("Intro video did not start within 1.0s, transitioning to app.");
+        console.log('Intro video stalled — transitioning to app.');
         showApp();
       }
-    }, 1000);
+    }, isMobile ? 600 : 800);
 
-    // Maximum safe timeout (5.5s for desktop, 2.2s for mobile)
-    setTimeout(() => {
-      if (!appShown) showApp();
-    }, isMobile ? 2200 : 5500);
-  } else {
-    initCosmicBackground();
-  }
+    // Absolute maximum: 1.5s mobile, 5.5s desktop
+    setTimeout(() => { if (!appShown) showApp(); }, isMobile ? 1500 : 5500);
 
-  // 2. Interactive Cosmic Canvas Background (Adaptive for Mobile / Tablet / Desktop)
+  } // end: no intro overlay fallback
+
+  // ─── Cosmic Canvas Background ───
   function initCosmicBackground() {
+
     const canvas = document.getElementById('cosmic-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');

@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
-    <title>Marvel Cinematic Universe | Watch & Download</title>
+    <title>Marvel Cinematic Universe | Watch &amp; Download</title>
     <meta name="description" content="Watch and download your favorite Marvel movies in stunning high quality." />
     <meta name="theme-color" content="#060608" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./style.css?v=5" />
     <script>
       window.skipIntroVideo = function() {
         var overlay = document.getElementById('intro-overlay');
@@ -36,10 +36,18 @@
           window.__onIntroSkipped();
         }
       };
+      (function() {
+        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        var effectiveType = conn ? conn.effectiveType : null;
+        var saveData = conn ? conn.saveData : false;
+        window.__slowConnection = (effectiveType === '2g' || effectiveType === 'slow-2g') || saveData;
+        if (window.__slowConnection) {
+          setTimeout(function() { window.skipIntroVideo(); }, 400);
+        }
+      })();
     </script>
   </head>
   <body>
-    <!-- Fullscreen Starting Intro Video Overlay (Different for Laptop vs Mobile) -->
     <div id="intro-overlay" class="intro-overlay" onclick="window.skipIntroVideo()" ontouchstart="window.skipIntroVideo()" aria-label="Starting Video Intro">
       <div class="intro-backdrop">
         <div class="intro-logo-pulse">
@@ -48,9 +56,8 @@
         </div>
       </div>
       <div class="video-container">
-        <video id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture>
-          <source src="./new_starting_video_for_mobile_web.mp4" media="(max-width: 768px)" type="video/mp4">
-          <source src="./new_opening_marvel_video_web.mp4" media="(min-width: 769px)" type="video/mp4">
+        <video id="intro-video" muted playsinline webkit-playsinline preload="none" disablePictureInPicture>
+          <!-- Sources injected dynamically by main.js after device detection -->
         </video>
       </div>
       <button id="skip-intro" class="skip-btn" type="button" aria-label="Skip Intro" onclick="event.stopPropagation(); window.skipIntroVideo();" ontouchstart="event.stopPropagation(); window.skipIntroVideo();">
@@ -59,9 +66,7 @@
       </button>
     </div>
 
-    <!-- Main Application -->
     <div id="app">
-      <!-- Background Ambient Glow & Cosmic Canvas -->
       <canvas id="cosmic-canvas"></canvas>
       <div class="ambient-glow orb-1"></div>
       <div class="ambient-glow orb-2"></div>
@@ -75,26 +80,36 @@
           </a>
           <div class="header-search">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input 
-              type="text" 
-              id="movie-search" 
-              placeholder="Search by movie title, year..." 
-              autocomplete="off"
-              spellcheck="false"
-            />
+            <input type="text" id="movie-search" placeholder="Search by movie title, year..." autocomplete="off" spellcheck="false" />
             <button id="clear-search" class="clear-search-btn hidden" aria-label="Clear search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
           <nav class="nav">
             <a href="#featured" class="active">All Movies</a>
+            <div class="info-icon-wrap" aria-label="Instructions" tabindex="0">
+              <svg class="info-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z"/>
+                <circle cx="11.75" cy="6.5" r="1.5"/>
+                <path d="M10 9H12.5V15.5H14.5V17H9V15.5H11V10.5H10V9Z"/>
+              </svg>
+              <div class="info-tooltip header-tooltip">
+                <p><strong>How to use:</strong></p>
+                <ul>
+                  <li><strong>Single click</strong> on poster for Trailer</li>
+                  <li><strong>Double click</strong> on poster for Info</li>
+                  <li><strong>Trailer button</strong> to watch trailer</li>
+                  <li><strong>Get &#9662; button</strong> to download movie</li>
+                </ul>
+              </div>
+            </div>
           </nav>
         </div>
       </header>
       
       <main class="main-content">
         <section class="hero">
-          <video id="hero-video" autoplay loop muted playsinline webkit-playsinline preload="auto" disablePictureInPicture class="hero-video">
+          <video id="hero-video" loop muted playsinline webkit-playsinline preload="none" disablePictureInPicture class="hero-video">
             <source src="./new_one_header_video_web.mp4" type="video/mp4">
           </video>
           <div class="hero-overlay"></div>
@@ -107,10 +122,7 @@
               <span id="movies-count" class="movies-count-badge">37 Titles</span>
             </div>
           </div>
-          
-          <div id="movies-grid" class="movies-grid">
-            <!-- Movies dynamically injected here -->
-          </div>
+          <div id="movies-grid" class="movies-grid"></div>
           <div id="no-results" class="no-results hidden">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
             <p>No Marvel movies found matching your search.</p>
@@ -124,10 +136,9 @@
           <span class="marvel-box">MARVEL</span>
           <span class="studios-text">MOVIES</span>
         </div>
-        <p>&copy; 2026 MCU Fan Hub. High quality streaming & downloads archive.</p>
+        <p>&copy; 2026 MCU Fan Hub. High quality streaming &amp; downloads archive.</p>
       </footer>
 
-      <!-- Scroll to Top Button -->
       <button id="scroll-top-btn" class="scroll-top-btn" aria-label="Scroll to top">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
       </button>
