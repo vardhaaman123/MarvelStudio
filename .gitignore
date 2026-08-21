@@ -4,3 +4,6 @@ dist
 *.zip
 *.log
 ffmpeg-bin/
+
+# Local Netlify folder
+.netlify

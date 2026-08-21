@@ -39,11 +39,11 @@ const movies = [
 ];
 
 // ─── VIDEO SOURCES: Optimized compressed versions (fallback to originals) ───
-const desktopIntroVideo = './intro_desktop_opt.mp4';
+const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
 const desktopIntroVideoFallback = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './intro_mobile_opt.mp4';
+const mobileIntroVideo = './new_starting_video_for_mobile_web.mp4';
 const mobileIntroVideoFallback = './new_starting_video_for_mobile_web.mp4';
-const heroVideo_src = './hero_opt.mp4';
+const heroVideo_src = './new_one_header_video_web.mp4';
 const heroVideo_srcFallback = './new_one_header_video_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
