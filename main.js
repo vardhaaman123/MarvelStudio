@@ -38,13 +38,10 @@ const movies = [
   { id: 37, phase: 6, imdb: "7.4", themeColor: "#0ea5e9", glowColor: "rgba(14, 165, 233, 0.5)", title: "The Fantastic Four: First Steps", year: "2025", duration: "TBD", trailerUrl: "https://www.youtube.com/results?search_query=The+Fantastic+Four+First+Steps+trailer", poster: "./The%20Fantastic%20Four%20First%20Steps.jpg", downloads: [ { resolution: "1080p", url: "https://hubcloud.cx/drive/qpmihliosqmh7pp" }, { resolution: "2K", url: "https://hubcloud.cx/drive/ahidhwd1lyadrwk" } ] },
 ];
 
-// ─── VIDEO SOURCES: Optimized compressed versions (fallback to originals) ───
-const desktopIntroVideo = './intro_desktop_opt.mp4';
-const desktopIntroVideoFallback = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './intro_mobile_opt.mp4';
-const mobileIntroVideoFallback = './new_starting_video_for_new%20mobile_web.MP4';
-const heroVideo_src = './hero_opt.mp4';
-const heroVideo_srcFallback = './new_one_header_video_web.mp4';
+// ─── VIDEO SOURCES ───
+const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
+const mobileIntroVideo = './new_starting_video_for_new%20mobile_web.MP4';
+const heroVideo_src = './new_one_header_video_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
   const introOverlay = document.getElementById('intro-overlay');
@@ -152,21 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // This is the key optimization: browser downloads NOTHING until this code runs.
     // By this point, the main UI (movies grid, header, etc.) is already rendering.
     const injectVideoSrc = () => {
-      // Choose optimized source with original as fallback
+      // Choose source based on device
       const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
-      const fallbackSrc = isMobile ? mobileIntroVideoFallback : desktopIntroVideoFallback;
 
-      // Create <source> elements dynamically
+      // Create <source> element dynamically
       const src1 = document.createElement('source');
       src1.src = primarySrc;
       src1.type = 'video/mp4';
 
-      const src2 = document.createElement('source');
-      src2.src = fallbackSrc;
-      src2.type = 'video/mp4';
-
       introVideo.appendChild(src1);
-      introVideo.appendChild(src2);
 
       // Use metadata only (fetches ~20 KB header, not full file)
       introVideo.preload = 'metadata';
