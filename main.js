@@ -40,7 +40,7 @@ const movies = [
 
 // ─── VIDEO SOURCES ───
 const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './new_starting_video_for_new%20mobile_web.MP4';
+const mobileIntroVideo = './mobile_intro.mp4';
 const heroVideo_src = './new_one_header_video_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
