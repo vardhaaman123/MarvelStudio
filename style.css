@@ -168,10 +168,8 @@ button, a, input {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
+  right: 0;
+  bottom: 0;
   background-color: #050812;
   z-index: 99999;
   display: flex;
@@ -215,7 +213,11 @@ button, a, input {
 }
 
 .video-container {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -229,9 +231,11 @@ button, a, input {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
   background: transparent;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
