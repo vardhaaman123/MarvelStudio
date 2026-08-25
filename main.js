@@ -212,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
       skipBtn.addEventListener('touchstart', triggerSkip, { passive: false });
     }
     introOverlay.addEventListener('click', triggerSkip);
-    introOverlay.addEventListener('touchstart', triggerSkip, { passive: true });
     window.addEventListener('keydown', (e) => {
       if (!appShown && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) showApp();
     }, { once: true });
