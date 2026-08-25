@@ -36,21 +36,12 @@
           window.__onIntroSkipped();
         }
       };
-      (function() {
-        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        var effectiveType = conn ? conn.effectiveType : null;
-        var saveData = conn ? conn.saveData : false;
-        window.__slowConnection = (effectiveType === '2g' || effectiveType === 'slow-2g') || saveData;
-        if (window.__slowConnection) {
-          setTimeout(function() { window.skipIntroVideo(); }, 400);
-        }
-      })();
     </script>
   </head>
   <body>
     <div id="intro-overlay" class="intro-overlay" aria-label="Starting Video Intro">
       <div class="video-container">
-        <video id="intro-video" muted playsinline webkit-playsinline preload="none" disablePictureInPicture>
+        <video id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture>
           <!-- Sources injected dynamically by main.js after device detection -->
         </video>
       </div>

@@ -40,7 +40,7 @@ const movies = [
 
 // ─── VIDEO SOURCES ───
 const desktopIntroVideo = './new_opening_marvel_video_web.mp4';
-const mobileIntroVideo = './mobile_intro.mp4';
+const mobileIntroVideo = './mobile_opening_video.mp4';
 const heroVideo_src = './new_one_header_video_web.mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -131,51 +131,30 @@ document.addEventListener('DOMContentLoaded', () => {
       'color: #aaa;'
     );
 
-    // ─── FAST FALLBACK: If already flagged as slow connection by inline script, bail out ───
-    if (window.__slowConnection) {
-      // inline script already scheduled skipIntroVideo — just set up skip button
-      if (skipBtn) skipBtn.addEventListener('click', showApp);
-      // On slow connection: after brief logo flash, show app (400ms set by inline script)
-      return; // Exit early, no video setup needed
-    }
-
-    // ─── VERY SLOW / SAVE-DATA: Skip video entirely, just show pulsing logo ───
-    if (connQuality === 'very-slow' || connQuality === 'save-data') {
-      setTimeout(showApp, 500); // Logo flashes for 500ms then straight to app
-      return;
-    }
-
-    // ─── INJECT VIDEO SRC LAZILY (not in HTML) ───
-    // This is the key optimization: browser downloads NOTHING until this code runs.
-    // By this point, the main UI (movies grid, header, etc.) is already rendering.
+    // ─── INJECT VIDEO SRC ───
     const injectVideoSrc = () => {
       // Choose source based on device
       const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
 
-      // Create <source> element dynamically
-      const src1 = document.createElement('source');
-      src1.src = primarySrc;
-      src1.type = 'video/mp4';
-
-      introVideo.appendChild(src1);
-
-      // Use metadata only (fetches ~20 KB header, not full file)
-      introVideo.preload = 'metadata';
+      // Set src directly — most reliable for mobile autoplay
+      introVideo.src = primarySrc;
+      introVideo.preload = 'auto';
       introVideo.muted = true;
       introVideo.setAttribute('muted', '');
       introVideo.setAttribute('playsinline', '');
       introVideo.setAttribute('webkit-playsinline', '');
+      introVideo.setAttribute('autoplay', '');
       introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'desktop');
 
       introVideo.load();
-      introVideo.play().catch(e => console.warn('Intro autoplay failed:', e));
+      introVideo.play().catch(e => {
+        console.warn('Intro autoplay failed:', e);
+        // Only skip if autoplay is truly blocked
+        showApp();
+      });
     };
 
-    // ─── SLOW CONNECTION (3G): inject src but with shorter timeout ───
-    const isSlowConn = (connQuality === 'slow');
-    // Delay src injection slightly so main app frame paints first
-    const srcInjectDelay = isMobile ? 80 : 50;
-    setTimeout(injectVideoSrc, srcInjectDelay);
+    setTimeout(injectVideoSrc, 0);
 
     let hasPlayed = false;
 

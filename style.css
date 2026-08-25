@@ -1040,6 +1040,16 @@ button, a, input {
     padding: 20px calc(12px + var(--sar)) 60px calc(12px + var(--sal));
   }
 
+  .movie-card {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .card-image-wrap {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+
   .section-header {
     margin-bottom: 20px;
     padding-bottom: 16px;
