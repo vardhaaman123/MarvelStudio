@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <title>Marvel Cinematic Universe | Watch &amp; Download</title>
     <meta name="description" content="Watch and download your favorite Marvel movies in stunning high quality." />
-    <meta name="theme-color" content="#060608" />
+    <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="format-detection" content="telephone=no" />
@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="./style.css?v=5" />
     <script>
       window.skipIntroVideo = function() {
+        document.body.classList.remove('intro-active');
+        var app = document.getElementById('app');
+        if (app) {
+          app.classList.remove('app-hidden');
+        }
         var overlay = document.getElementById('intro-overlay');
         if (overlay) {
           overlay.style.opacity = '0';
@@ -38,7 +43,7 @@
       };
     </script>
   </head>
-  <body>
+  <body class="intro-active">
     <div id="intro-overlay" class="intro-overlay" aria-label="Starting Video Intro">
       <div class="video-container">
         <video id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture>
@@ -51,7 +56,7 @@
       </button>
     </div>
 
-    <div id="app">
+    <div id="app" class="app-hidden">
 
       <div class="ambient-glow orb-1"></div>
       <div class="ambient-glow orb-2"></div>

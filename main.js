@@ -88,6 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (appShown) return;
     appShown = true;
 
+    document.body.classList.remove('intro-active');
+    const app = document.getElementById('app');
+    if (app) {
+      app.classList.remove('app-hidden');
+    }
+
     // Release intro video memory immediately
     if (introVideo) {
       try {
