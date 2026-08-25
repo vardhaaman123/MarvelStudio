@@ -196,16 +196,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { once: true });
 
     // ─── HARD TIMEOUTS (SAFETY NETS) ───
-    // If video hasn't started playing within 800ms → skip to app (mobile: 600ms)
+    // If video hasn't started playing within 3000ms → skip to app (give mobile networks time to buffer)
     setTimeout(() => {
       if (!appShown && !hasPlayed && (introVideo.paused || introVideo.currentTime === 0)) {
         console.log('Intro video stalled — transitioning to app.');
         showApp();
       }
-    }, isMobile ? 600 : 800);
+    }, isMobile ? 3500 : 2500);
 
-    // Absolute maximum: 6s mobile, 6s desktop (safety net)
-    setTimeout(() => { if (!appShown) showApp(); }, isMobile ? 6000 : 6000);
+    // Absolute maximum timeout (safety net): wait 8 seconds max
+    setTimeout(() => { if (!appShown) showApp(); }, 8000);
 
   } // end: no intro overlay fallback
 
