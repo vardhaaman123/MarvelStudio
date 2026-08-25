@@ -131,56 +131,60 @@ document.addEventListener('DOMContentLoaded', () => {
       'color: #aaa;'
     );
 
-    // ─── INJECT VIDEO SRC ───
-    const injectVideoSrc = () => {
-      // Choose source based on device
-      const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
+    // ─── INJECT VIDEO SRC AND PLAY ───
+    const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
 
-      // Set src directly — most reliable for mobile autoplay
-      introVideo.src = primarySrc;
-      introVideo.preload = 'auto';
+    introVideo.muted = true;
+    introVideo.defaultMuted = true;
+    introVideo.playsInline = true;
+    introVideo.setAttribute('muted', '');
+    introVideo.setAttribute('playsinline', '');
+    introVideo.setAttribute('webkit-playsinline', '');
+    introVideo.setAttribute('autoplay', '');
+    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'desktop');
+    introVideo.preload = 'auto';
+    introVideo.src = primarySrc;
+
+    const attemptPlay = () => {
+      if (appShown) return;
       introVideo.muted = true;
-      introVideo.setAttribute('muted', '');
-      introVideo.setAttribute('playsinline', '');
-      introVideo.setAttribute('webkit-playsinline', '');
-      introVideo.setAttribute('autoplay', '');
-      introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'desktop');
-
-      introVideo.load();
-      introVideo.play().catch(e => {
-        console.warn('Intro autoplay failed:', e);
-        // Only skip if autoplay is truly blocked
-        showApp();
-      });
+      const playPromise = introVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.log('Video play deferred until ready:', err);
+        });
+      }
     };
 
-    setTimeout(injectVideoSrc, 0);
+    introVideo.load();
+    attemptPlay();
 
-    let hasPlayed = false;
+    introVideo.addEventListener('loadedmetadata', attemptPlay);
+    introVideo.addEventListener('loadeddata', attemptPlay);
+    introVideo.addEventListener('canplay', attemptPlay);
+    introVideo.addEventListener('canplaythrough', attemptPlay);
+
+    // If browser requires user interaction for autoplay on mobile
+    const handleFirstTouch = () => {
+      if (!appShown && introVideo.paused) {
+        attemptPlay();
+      }
+    };
+    document.addEventListener('touchstart', handleFirstTouch, { passive: true, once: true });
+    document.addEventListener('click', handleFirstTouch, { passive: true, once: true });
+
+    // Video end handling
+    introVideo.addEventListener('ended', showApp);
 
     introVideo.addEventListener('timeupdate', () => {
-      if (introVideo.currentTime > 0.1) hasPlayed = true;
-      // Play full video on both mobile and desktop
-      const maxTime = introVideo.duration ? introVideo.duration - 0.3 : 5;
-      if (introVideo.currentTime >= maxTime) showApp();
+      if (introVideo.duration && introVideo.duration > 1) {
+        if (introVideo.currentTime >= introVideo.duration - 0.2) {
+          showApp();
+        }
+      }
     });
 
-    introVideo.addEventListener('loadedmetadata', () => {
-      introVideo.play().catch(() => {});
-      if (introVideo.duration > 0) {
-        const cap = (introVideo.duration + 0.3) * 1000;
-        setTimeout(showApp, cap);
-      }
-    }, { once: true });
-
-    introVideo.addEventListener('canplay', () => {
-      introVideo.play().catch(() => {});
-    }, { once: true });
-
-    introVideo.addEventListener('ended', showApp);
-    introVideo.addEventListener('error', () => showApp());
-
-    // ─── SKIP HANDLERS ───
+    // ─── SKIP HANDLERS (Only explicitly triggered) ───
     const triggerSkip = (e) => {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       showApp();
@@ -190,24 +194,19 @@ document.addEventListener('DOMContentLoaded', () => {
       skipBtn.addEventListener('pointerdown', triggerSkip);
       skipBtn.addEventListener('touchstart', triggerSkip, { passive: false });
     }
-    introOverlay.addEventListener('click', triggerSkip);
     window.addEventListener('keydown', (e) => {
       if (!appShown && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) showApp();
     }, { once: true });
 
-    // ─── HARD TIMEOUTS (SAFETY NETS) ───
-    // If video hasn't started playing within 3000ms → skip to app (give mobile networks time to buffer)
+    // Generous fallback safety net (18s) to prevent permanent lock if network fails completely
     setTimeout(() => {
-      if (!appShown && !hasPlayed && (introVideo.paused || introVideo.currentTime === 0)) {
-        console.log('Intro video stalled — transitioning to app.');
+      if (!appShown) {
+        console.log('Intro timeout safety net reached — showing app.');
         showApp();
       }
-    }, isMobile ? 3500 : 2500);
+    }, 18000);
 
-    // Absolute maximum timeout (safety net): wait 8 seconds max
-    setTimeout(() => { if (!appShown) showApp(); }, 8000);
-
-  } // end: no intro overlay fallback
+  } // end: intro overlay logic
 
   // 3. Render Movies
   function renderMovies() {
