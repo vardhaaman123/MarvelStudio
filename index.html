@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -49,12 +49,6 @@
   </head>
   <body>
     <div id="intro-overlay" class="intro-overlay" onclick="window.skipIntroVideo()" ontouchstart="window.skipIntroVideo()" aria-label="Starting Video Intro">
-      <div class="intro-backdrop">
-        <div class="intro-logo-pulse">
-          <span class="marvel-box">MARVEL</span>
-          <span class="studios-text">MOVIES</span>
-        </div>
-      </div>
       <div class="video-container">
         <video id="intro-video" muted playsinline webkit-playsinline preload="none" disablePictureInPicture>
           <!-- Sources injected dynamically by main.js after device detection -->
@@ -67,7 +61,7 @@
     </div>
 
     <div id="app">
-      <canvas id="cosmic-canvas"></canvas>
+
       <div class="ambient-glow orb-1"></div>
       <div class="ambient-glow orb-2"></div>
       <div class="ambient-glow orb-3"></div>
@@ -96,7 +90,6 @@
               <div class="info-tooltip header-tooltip">
                 <p><strong>How to use:</strong></p>
                 <ul>
-                  <li><strong>Single click</strong> on poster for Trailer</li>
                   <li><strong>Double click</strong> on poster for Info</li>
                   <li><strong>Trailer button</strong> to watch trailer</li>
                   <li><strong>Get &#9662; button</strong> to download movie</li>

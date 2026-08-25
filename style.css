@@ -5,16 +5,16 @@
   --gold-color: #f59e0b;
   --gold-glow: rgba(245, 158, 11, 0.4);
   --cyan-color: #06b6d4;
-  --bg-color: #060608;
-  --bg-surface: rgba(255, 255, 255, 0.05);
-  --bg-surface-hover: rgba(255, 255, 255, 0.09);
-  --glass-bg: rgba(16, 16, 22, 0.65);
-  --glass-card: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(12, 12, 16, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-border-light: rgba(255, 255, 255, 0.22);
+  --bg-color: #050812;
+  --bg-surface: rgba(255, 255, 255, 0.06);
+  --bg-surface-hover: rgba(255, 255, 255, 0.10);
+  --glass-bg: rgba(5, 10, 25, 0.75);
+  --glass-card: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(6, 10, 22, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.13);
+  --glass-border-light: rgba(255, 255, 255, 0.24);
   --glass-border-hover: rgba(237, 29, 36, 0.7);
   --glass-inset-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
-  --glass-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.75);
+  --glass-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8);
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
@@ -68,13 +68,13 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #08080c;
+  background: #040710;
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 6px;
-  border: 2px solid #08080c;
+  border: 2px solid #040710;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -103,17 +103,6 @@ button, a, input {
 /* =========================================
    BACKGROUND COSMIC CANVAS & AMBIENT GLOW
    ========================================= */
-#cosmic-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
-  z-index: 0;
-  pointer-events: none;
-}
 
 .ambient-glow {
   position: fixed;
@@ -183,7 +172,7 @@ button, a, input {
   width: 100dvw;
   height: 100vh;
   height: 100dvh;
-  background-color: #060608;
+  background-color: #050812;
   z-index: 99999;
   display: flex;
   justify-content: center;
@@ -208,7 +197,7 @@ button, a, input {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #060608;
+  background: transparent;
   z-index: 1;
 }
 
@@ -237,10 +226,13 @@ button, a, input {
 }
 
 #intro-video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain !important;
-  background: #000;
+  object-fit: cover;
+  background: transparent;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
@@ -507,7 +499,7 @@ button, a, input {
   object-fit: cover;
   object-position: center 30%;
   z-index: 0;
-  filter: brightness(0.72) contrast(1.1);
+  filter: none;
   pointer-events: none;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -522,8 +514,7 @@ button, a, input {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(8, 8, 10, 0.25) 0%, rgba(8, 8, 10, 0.75) 75%, var(--bg-color) 100%);
-  box-shadow: inset 0 -80px 100px -10px var(--bg-color);
+  background: linear-gradient(to bottom, transparent 50%, var(--bg-color) 100%);
   z-index: 1;
 }
 
