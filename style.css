@@ -45,6 +45,11 @@ html {
   background-color: var(--bg-color);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 body {
@@ -52,10 +57,13 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   line-height: 1.5;
-  overflow-x: hidden;
-  position: relative;
+  width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -63,21 +71,48 @@ body {
 
 body.intro-active {
   overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  width: 100vw !important;
+  height: 100% !important;
   height: 100vh !important;
   height: 100dvh !important;
+  min-height: 100dvh !important;
   touch-action: none !important;
   background-color: #000000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 #app {
+  width: 100%;
+  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  position: relative;
   opacity: 1;
   transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 #app.app-hidden {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+.main-content {
+  flex: 1 0 auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* Custom Sleek Scrollbars for Windows & Chrome/Edge/Firefox */
@@ -191,10 +226,11 @@ button, a, input {
   bottom: 0;
   inset: 0;
   width: 100%;
-  height: 100%;
   width: 100vw;
+  height: 100%;
   height: 100vh;
   height: 100dvh;
+  min-height: 100dvh;
   background-color: #000000 !important;
   z-index: 99999;
   display: flex;
@@ -202,6 +238,8 @@ button, a, input {
   align-items: center;
   transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .intro-overlay.hidden {
@@ -219,12 +257,18 @@ button, a, input {
   bottom: 0;
   inset: 0;
   width: 100%;
+  width: 100vw;
   height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
   background: #000000;
   z-index: 1;
+  margin: 0;
+  padding: 0;
 }
 
 .intro-logo-pulse {
@@ -248,13 +292,19 @@ button, a, input {
   bottom: 0;
   inset: 0;
   width: 100%;
+  width: 100vw;
   height: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
   background: #000000 !important;
   z-index: 2;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #intro-video {
@@ -266,10 +316,19 @@ button, a, input {
   inset: 0;
   width: 100% !important;
   height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: cover !important;
+  object-position: center !important;
   background: #000000 !important;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  display: block;
 }
 
 .skip-btn {
@@ -433,6 +492,17 @@ button, a, input {
   outline: none;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2);
   transition: var(--transition);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Remove default browser search clear/cancel icons so custom UI remains intact */
+#movie-search::-webkit-search-decoration,
+#movie-search::-webkit-search-cancel-button,
+#movie-search::-webkit-search-results-button,
+#movie-search::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
 }
 
 #movie-search::placeholder {
@@ -513,24 +583,51 @@ button, a, input {
    ========================================= */
 .hero {
   padding: 0;
+  margin: 0;
   text-align: center;
   position: relative;
+  width: 100%;
   height: 44vh;
-  min-height: 320px;
+  min-height: 300px;
   max-height: 480px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s ease,
+              margin 0.35s ease;
+  will-change: height, min-height, max-height, opacity;
+}
+
+/* SEARCH STATE: Header video seamlessly collapses with no empty gaps */
+.hero.hero-collapsed,
+body.is-searching .hero {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 .hero-video {
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  max-width: none;
+  max-height: none;
   object-fit: cover;
   object-position: center 30%;
   z-index: 0;
@@ -541,15 +638,20 @@ button, a, input {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   will-change: transform;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 .hero-overlay {
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent 50%, var(--bg-color) 100%);
+  background: linear-gradient(to bottom, transparent 40%, var(--bg-color) 100%);
   z-index: 1;
 }
 
@@ -562,6 +664,11 @@ button, a, input {
   padding: 30px calc(24px + var(--sar)) 80px calc(24px + var(--sal));
   position: relative;
   z-index: 2;
+  transition: padding 0.3s ease;
+}
+
+body.is-searching .movies-section {
+  padding-top: 24px;
 }
 
 .section-header {
@@ -608,6 +715,20 @@ button, a, input {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 26px;
+}
+
+@media (min-width: 1200px) {
+  .movies-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .movies-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 26px;
+  }
 }
 
 /* No results state */
@@ -1008,22 +1129,22 @@ button, a, input {
    RESPONSIVE BREAKPOINTS (MOBILE / TABLET / MAC / WINDOWS)
    ========================================= */
 
-/* Tablets & Small Laptops (601px to 1024px) */
+/* Tablets & Small Laptops (641px to 1024px) -> 3 Columns */
 @media (max-width: 1024px) {
   .movies-grid {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
   }
   .hero {
     height: 38vh;
-    min-height: 300px;
+    min-height: 280px;
   }
 }
 
 @media (max-width: 860px) {
   .header-inner {
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
   }
   .header-search {
     order: 3;
@@ -1031,112 +1152,132 @@ button, a, input {
     margin-top: 4px;
   }
   .movies-section {
-    padding-top: 24px;
+    padding-top: 20px;
   }
 }
 
-/* Mobile Phones (Portrait & Small Screens: <= 600px) */
-@media (max-width: 600px) {
+/* Mobile Phones (Portrait & Small Screens: <= 640px) */
+@media (max-width: 640px) {
   .header {
-    padding: calc(10px + var(--sat)) calc(14px + var(--sar)) 10px calc(14px + var(--sal));
+    padding: calc(8px + var(--sat)) calc(12px + var(--sar)) 8px calc(12px + var(--sal));
   }
 
   .logo {
-    font-size: 1.25rem;
+    font-size: 1.18rem;
   }
 
   .marvel-box {
     padding: 2px 6px;
     margin-right: 5px;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
   }
 
   .studios-text {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     letter-spacing: 1px;
   }
 
   .nav a {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    padding: 4px 2px;
   }
 
   #movie-search {
-    padding: 8px 32px 8px 36px;
+    padding: 8px 32px 8px 34px;
     font-size: 16px; /* Essential to prevent iOS zoom */
+    border-radius: 20px;
   }
 
   .hero {
-    height: 34vh;
-    min-height: 250px;
-    max-height: 340px;
+    height: 32vh;
+    min-height: 220px;
+    max-height: 320px;
   }
 
   .movies-section {
-    padding: 20px calc(12px + var(--sar)) 60px calc(12px + var(--sal));
+    padding: 16px calc(12px + var(--sar)) 50px calc(12px + var(--sal));
+  }
+
+  .movies-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 
   .movie-card {
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
   }
 
   .card-image-wrap {
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
   }
 
   .section-header {
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    gap: 10px;
+  }
+
+  .movies-section h2 {
+    font-size: clamp(1.1rem, 3.8vw, 1.4rem);
+    letter-spacing: 1px;
+  }
+
+  .movies-count-badge {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 10px;
   }
 
   .card-imdb-badge {
     top: 6px;
     left: 6px;
     padding: 0;
-    gap: 4px;
+    gap: 3px;
     background: transparent;
     border: none;
     box-shadow: none;
   }
 
   .imdb-tag {
-    font-size: 0.6rem;
-    padding: 1.5px 4px;
+    font-size: 0.58rem;
+    padding: 1.5px 3.5px;
     border-radius: 3px;
   }
 
   .imdb-score {
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     gap: 2px;
   }
 
   .card-content {
-    padding: 10px 10px 12px;
+    padding: 10px 8px 12px;
   }
 
   .card-title {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     margin-bottom: 4px;
-    line-height: 1.2;
-    -webkit-line-clamp: 2; /* Allows 2 lines on small phones */
+    line-height: 1.25;
+    -webkit-line-clamp: 2;
+    min-height: 2.3em;
   }
 
   .card-meta {
     font-size: 0.72rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    gap: 4px;
   }
 
   .card-actions {
-    gap: 6px;
+    gap: 5px;
   }
 
   .btn {
-    padding: 7px 6px;
-    font-size: 0.76rem;
+    padding: 6px 4px;
+    font-size: 0.74rem;
     border-radius: 8px;
-    min-height: 34px;
+    min-height: 32px;
     gap: 3px;
   }
 
@@ -1146,50 +1287,97 @@ button, a, input {
   }
 
   .dropdown-content {
-    border-radius: 10px;
-    padding: 4px;
+    border-radius: 8px;
+    padding: 3px;
+    min-width: 100%;
   }
 
   .dropdown-content a {
-    padding: 7px 8px;
-    font-size: 0.78rem;
+    padding: 6px 8px;
+    font-size: 0.76rem;
   }
 
   .skip-btn {
-    bottom: calc(20px + var(--sab));
+    bottom: calc(18px + var(--sab));
     right: calc(16px + var(--sar));
     padding: 9px 18px;
     font-size: 0.85rem;
+    border-radius: 24px;
   }
 
   .scroll-top-btn {
     bottom: calc(16px + var(--sab));
-    right: calc(16px + var(--sar));
+    right: calc(14px + var(--sar));
     width: 40px;
     height: 40px;
   }
 
   .footer {
-    padding: 30px 16px calc(24px + var(--sab));
-    margin-top: 30px;
+    padding: 28px 14px calc(22px + var(--sab));
+    margin-top: 24px;
+  }
+
+  .header-tooltip {
+    max-width: min(280px, calc(100vw - 28px));
+    right: -5px;
   }
 }
 
-/* Very Small Mobile Screens (e.g. iPhone SE / Galaxy Fold Cover: <= 360px) */
+/* Very Small Mobile Screens (e.g. iPhone SE / Galaxy Fold / 320px - 360px) */
 @media (max-width: 360px) {
   .movies-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
+  .movies-section {
+    padding: 12px calc(8px + var(--sar)) 40px calc(8px + var(--sal));
+  }
   .card-content {
-    padding: 8px 8px 10px;
+    padding: 8px 6px 10px;
   }
   .card-title {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    min-height: 2.1em;
+  }
+  .card-meta {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
   }
   .btn {
-    font-size: 0.7rem;
-    padding: 6px 4px;
+    font-size: 0.68rem;
+    padding: 5px 3px;
+    min-height: 28px;
+    border-radius: 6px;
+    gap: 2px;
+  }
+  .btn svg {
+    width: 10px;
+    height: 10px;
+  }
+  .skip-btn {
+    bottom: calc(14px + var(--sab));
+    right: calc(12px + var(--sar));
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
+}
+
+/* Landscape Phones */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    height: 55vh;
+    min-height: 160px;
+    max-height: 250px;
+  }
+  .skip-btn {
+    bottom: calc(12px + var(--sab));
+    right: calc(16px + var(--sar));
+    padding: 7px 15px;
+    font-size: 0.8rem;
+  }
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
   }
 }
 

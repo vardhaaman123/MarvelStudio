@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Marvel Cinematic Universe | Watch &amp; Download</title>
     <meta name="description" content="Watch and download your favorite Marvel movies in stunning high quality." />
     <meta name="theme-color" content="#000000" />
@@ -68,13 +68,23 @@
             <span class="marvel-box">MARVEL</span>
             <span class="studios-text">MOVIES</span>
           </a>
-          <div class="header-search">
+          <form class="header-search" id="search-form" role="search" action="javascript:void(0);" method="get" onsubmit="return false;">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="movie-search" placeholder="Search by movie title, year..." autocomplete="off" spellcheck="false" />
-            <button id="clear-search" class="clear-search-btn hidden" aria-label="Clear search">
+            <input 
+              type="search" 
+              id="movie-search" 
+              placeholder="Search by movie title, year..." 
+              autocomplete="off" 
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              enterkeyhint="search"
+              inputmode="search"
+            />
+            <button id="clear-search" class="clear-search-btn hidden" type="button" aria-label="Clear search">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
-          </div>
+          </form>
           <nav class="nav">
             <a href="#featured" class="active">All Movies</a>
             <div class="info-icon-wrap" aria-label="Instructions" tabindex="0">

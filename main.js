@@ -48,7 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const skipBtn = document.getElementById('skip-intro');
   const introVideo = document.getElementById('intro-video');
   const heroVideo = document.getElementById('hero-video');
+  const heroSection = document.querySelector('.hero');
+  const allMoviesNav = document.querySelector('.nav a[href="#featured"]');
   const moviesGrid = document.getElementById('movies-grid');
+  const searchForm = document.getElementById('search-form');
   const searchInput = document.getElementById('movie-search');
   const clearSearchBtn = document.getElementById('clear-search');
   const noResults = document.getElementById('no-results');
@@ -64,12 +67,16 @@ document.addEventListener('DOMContentLoaded', () => {
   renderMovies();
 
 
-  // ─── Device detection ───
+  // ─── Device & Orientation detection ───
   const getIsMobile = () => {
     const isSmallScreen = window.innerWidth <= 768 || window.matchMedia('(max-width: 768px)').matches;
     const isMobileAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
     const isTouchMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024;
     return isSmallScreen || isMobileAgent || isTouchMobile;
+  };
+
+  const getIsPortrait = () => {
+    return window.matchMedia('(orientation: portrait)').matches || window.innerHeight >= window.innerWidth;
   };
 
   // ─── Connection quality detection ───
@@ -128,17 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── OPTIMIZED INTRO VIDEO SETUP ───
   if (introVideo && introOverlay) {
     const isMobile = getIsMobile();
+    const isPortrait = getIsPortrait();
     const connQuality = getConnectionQuality();
 
     console.log(
-      `%c🎬 MCU %c ${isMobile ? '📱 MOBILE' : '💻 DESKTOP'} %c Conn: ${connQuality}`,
+      `%c🎬 MCU %c ${isMobile ? (isPortrait ? '📱 MOBILE PORTRAIT' : '📱 MOBILE LANDSCAPE') : '💻 DESKTOP'} %c Conn: ${connQuality}`,
       'background: #e62429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
       'background: #00d26a; color: #000; font-weight: bold; padding: 4px 8px; border-radius: 4px;',
       'color: #aaa;'
     );
 
     // ─── INJECT VIDEO SRC AND PLAY ───
-    const primarySrc = isMobile ? mobileIntroVideo : desktopIntroVideo;
+    const primarySrc = (isMobile && isPortrait) ? mobileIntroVideo : desktopIntroVideo;
 
     introVideo.muted = true;
     introVideo.defaultMuted = true;
@@ -147,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     introVideo.setAttribute('playsinline', '');
     introVideo.setAttribute('webkit-playsinline', '');
     introVideo.setAttribute('autoplay', '');
-    introVideo.setAttribute('data-device', isMobile ? 'mobile' : 'desktop');
+    introVideo.setAttribute('data-device', (isMobile && isPortrait) ? 'mobile' : 'desktop');
     introVideo.preload = 'auto';
     introVideo.src = primarySrc;
 
@@ -161,6 +169,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     };
+
+    const updateIntroVideoForOrientation = () => {
+      if (appShown || !introVideo) return;
+      const isMob = getIsMobile();
+      const isPort = getIsPortrait();
+      const targetDevice = (isMob && isPort) ? 'mobile' : 'desktop';
+      if (introVideo.getAttribute('data-device') !== targetDevice) {
+        const curTime = introVideo.currentTime || 0;
+        const targetSrc = (isMob && isPort) ? mobileIntroVideo : desktopIntroVideo;
+        introVideo.setAttribute('data-device', targetDevice);
+        introVideo.src = targetSrc;
+        introVideo.currentTime = curTime;
+        attemptPlay();
+      }
+    };
+    window.addEventListener('resize', updateIntroVideoForOrientation, { passive: true });
+    window.addEventListener('orientationchange', updateIntroVideoForOrientation, { passive: true });
 
     introVideo.load();
     attemptPlay();
@@ -220,6 +245,24 @@ document.addEventListener('DOMContentLoaded', () => {
     moviesGrid.innerHTML = '';
 
     const query = currentSearch.toLowerCase().trim();
+    const isSearching = query.length > 0;
+
+    // Header video collapse / restore behavior
+    document.body.classList.toggle('is-searching', isSearching);
+    if (heroSection) {
+      heroSection.classList.toggle('hero-collapsed', isSearching);
+    }
+    if (heroVideo) {
+      if (isSearching) {
+        if (!heroVideo.paused) {
+          heroVideo.pause();
+        }
+      } else {
+        if (appShown && heroVideo.paused) {
+          heroVideo.play().catch(() => {});
+        }
+      }
+    }
 
     const filtered = movies.filter(movie => {
       if (!query) return true;
@@ -357,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 4. Search Handler with Clear Button
+  // 4. Search Handler with Mobile Keyboard Dismiss & Clear Button
   if (searchInput) {
     searchInput.addEventListener('input', e => {
       currentSearch = e.target.value;
@@ -366,7 +409,50 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       renderMovies();
     });
+
+    // Dismiss keyboard when user presses the keyboard action/arrow button or Enter
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        e.preventDefault();
+        searchInput.blur();
+      }
+    });
+
+    searchInput.addEventListener('keyup', e => {
+      if (e.key === 'Escape') {
+        searchInput.blur();
+      }
+    });
   }
+
+  // Dismiss keyboard when mobile search form action (arrow/search button) is submitted
+  if (searchForm) {
+    searchForm.addEventListener('submit', e => {
+      e.preventDefault();
+      if (searchInput) {
+        searchInput.blur();
+      }
+    });
+  }
+
+  // Auto-dismiss virtual keyboard when user scrolls the page or taps movie results
+  window.addEventListener('scroll', () => {
+    if (searchInput && document.activeElement === searchInput) {
+      searchInput.blur();
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchstart', e => {
+    if (searchInput && document.activeElement === searchInput && !e.target.closest('.header-search')) {
+      searchInput.blur();
+    }
+  }, { passive: true });
+
+  document.addEventListener('pointerdown', e => {
+    if (searchInput && document.activeElement === searchInput && !e.target.closest('.header-search')) {
+      searchInput.blur();
+    }
+  }, { passive: true });
 
   if (clearSearchBtn) {
     clearSearchBtn.addEventListener('click', () => {
@@ -389,6 +475,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
       }
       renderMovies();
+    });
+  }
+
+  // "All Movies" nav link click restores full catalog & header video
+  if (allMoviesNav) {
+    allMoviesNav.addEventListener('click', () => {
+      if (currentSearch.length > 0) {
+        currentSearch = '';
+        if (searchInput) {
+          searchInput.value = '';
+          if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+        }
+        renderMovies();
+      }
     });
   }
 
